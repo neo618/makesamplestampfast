@@ -13,8 +13,8 @@
           <div class="text-input-header">
             <span class="text-input-label">{{ t('stamp.taxNumber.number') }}:</span>
           </div>
-          <input 
-            type="text" 
+          <input
+            type="text"
             class="text-input-field"
             :value="config.taxNumber.code"
             @input="updateTaxNumber('code', ($event.target as HTMLInputElement).value)"
@@ -81,7 +81,7 @@
               :value="config.taxNumber.compression"
               min="0.0"
               max="3"
-              step="0.01"
+              step="0.05"
               @input="updateTaxNumber('compression', parseNumber($event))"
             />
             <button type="button" class="range-btn" @click.stop="adjustCompression(0.01)">▶</button>
@@ -99,7 +99,7 @@
               :value="config.taxNumber.letterSpacing"
               min="-1"
               max="20"
-              step="0.01"
+              step="0.05"
               @input="updateTaxNumber('letterSpacing', parseNumber($event))"
             />
             <button type="button" class="range-btn" @click.stop="adjustLetterSpacing(0.01)">▶</button>

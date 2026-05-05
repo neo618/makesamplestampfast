@@ -36,7 +36,7 @@
               :value="config.roughEdge.roughEdgeWidth"
               min="0.05"
               max="0.5"
-              step="0.01"
+              step="0.05"
               @input="updateRoughEdge('roughEdgeWidth', parseNumber($event))"
             />
             <button type="button" class="range-btn" @click.stop="adjustWidth(0.01)">▶</button>
@@ -72,7 +72,7 @@
               :value="config.roughEdge.roughEdgeProbability"
               min="0"
               max="1"
-              step="0.01"
+              step="0.05"
               @input="updateRoughEdge('roughEdgeProbability', parseNumber($event))"
             />
             <button type="button" class="range-btn" @click.stop="adjustProbability(0.01)">▶</button>
@@ -90,7 +90,7 @@
               :value="config.roughEdge.roughEdgeShift"
               min="-10"
               max="10"
-              step="0.01"
+              step="0.05"
               @input="updateRoughEdge('roughEdgeShift', parseNumber($event))"
             />
             <button type="button" class="range-btn" @click.stop="adjustShift(0.01)">▶</button>
@@ -346,4 +346,3 @@ const adjustPoints = (delta: number) => {
   background: #2563eb;
 }
 </style>
-

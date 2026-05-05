@@ -72,7 +72,7 @@
               :value="config.securityPattern.securityPatternWidth"
               min="0.05"
               max="0.5"
-              step="0.01"
+              step="0.05"
               @input="updateSecurityPattern('securityPatternWidth', parseNumber($event))"
             />
             <button type="button" class="range-btn" @click.stop="adjustWidth(0.01)">▶</button>
@@ -296,4 +296,3 @@ const adjustWidth = (delta: number) => {
   background: #2563eb;
 }
 </style>
-

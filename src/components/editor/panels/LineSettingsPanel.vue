@@ -30,7 +30,7 @@
         </div>
         <transition name="fade">
         <div v-show="isItemExpanded(index)" class="line-body">
-          <!-- 文本/选择类设置 -->
+          <!-- 文本/选择类设置 -->>
           <div class="settings-section">
             <label class="inline-label">
               <span class="label-text">{{ t('stamp.line.direction') }}:</span>
@@ -149,7 +149,7 @@
                   :value="line.opacity ?? 1"
                   min="0"
                   max="1"
-                  step="0.01"
+                  step="0.05"
                   @input="updateLine(index, 'opacity', parseNumber($event))"
                 />
                 <button type="button" class="range-btn" @click.stop="adjustOpacity(index, 0.01)">▶</button>
@@ -200,7 +200,7 @@ const selectedIndex = computed(() => props.selectedIndex ?? -1)
 // 跟踪每个项的展开状态
 const expandedItems = ref<Record<number, boolean>>({})
 
-// 当 selectedIndex 变化时，自动展开对应的项
+// ?selectedIndex 变化时，自动展开对应的项
 watch(selectedIndex, (newIndex) => {
   if (newIndex >= 0) {
     expandedItems.value = { [newIndex]: true }

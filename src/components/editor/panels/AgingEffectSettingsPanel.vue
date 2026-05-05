@@ -268,4 +268,3 @@ const adjustIntensity = (delta: number) => {
   background: #2563eb;
 }
 </style>
-

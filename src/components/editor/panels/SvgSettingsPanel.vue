@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="control-group svg-settings-group">
     <div class="group-header" @click="toggleExpanded">
       <h3>{{ t('stamp.svg.title') }}<span class="expand-icon" :class="{ expanded }">▼</span></h3>
@@ -116,7 +116,7 @@
                   <input
                     type="range"
                     min="-50"
-                    max="50"
+                    max="10"
                     step="0.2"
                     :value="item.positionX"
                     @input="event => updateField(index, 'positionX', parseNumber(event))"
@@ -134,7 +134,7 @@
                   <input
                     type="range"
                     min="-50"
-                    max="50"
+                    max="10"
                     step="0.2"
                     :value="item.positionY"
                     @input="event => updateField(index, 'positionY', parseNumber(event))"

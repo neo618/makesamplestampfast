@@ -2,10 +2,6 @@
   <div class="properties-panel">
     <div class="panel-header">
       <h3>{{ t('common.properties.title') }}</h3>
-      <label class="show-all-toggle">
-        <input type="checkbox" v-model="showAll" />
-        <span>{{ t('common.properties.showAll') }}</span>
-      </label>
     </div>
     <div class="panel-content">
       <EditorControls
@@ -22,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue'
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import EditorControls from '../../EditorControls.vue'
 import { IDrawStampConfig } from '../../DrawStampTypes'
@@ -98,44 +94,55 @@ defineExpose({
 
 <style scoped>
 .properties-panel {
-  width: 330px;
-  background: white;
-  border-left: 1px solid #e0e0e0;
+  width: 380px;
+  background: var(--bg-primary);
+  border-left: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   height: 60vh;
   overflow: hidden;
+  box-shadow: var(--shadow-sm);
 }
 
 .panel-header {
-  padding: 16px;
-  border-bottom: 1px solid #e0e0e0;
-  background: #f8f9fa;
-  flex-shrink: 0;
+  height: 56px;
+  padding: 0 20px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
 }
 
 .panel-header h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
-  color: #333;
+  color: #fff;
+  flex: 1;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  letter-spacing: 0.5px;
 }
 
 .show-all-toggle {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 14px;
-  color: #666;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
   cursor: pointer;
   user-select: none;
+  font-weight: 500;
 }
 
 .show-all-toggle input[type="checkbox"] {
   cursor: pointer;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary-color);
 }
 
 .show-all-toggle span {
@@ -145,6 +152,25 @@ defineExpose({
 .panel-content {
   flex: 1;
   overflow-y: auto;
+  background-color: var(--bg-secondary);
+  padding: 12px;
+}
+
+.panel-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.panel-content::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+}
+
+.panel-content::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.panel-content::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
 }
 </style>
 

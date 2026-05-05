@@ -8,29 +8,9 @@
     </div>
     <div class="group-content" v-show="expanded">
       <div v-for="(code, index) in codeList" :key="index" class="code-item">
-        <div class="code-header">
-          <div class="header-left">
-            <button
-              class="expand-toggle-btn"
-              @click.stop="toggleItem(index)"
-              :title="isItemExpanded(index) ? t('stamp.common.collapse') : t('stamp.common.expand')"
-            >
-              <span class="expand-icon" :class="{ expanded: isItemExpanded(index) }">▼</span>
-            </button>
-            <span>{{ t('stamp.common.line', { index: index + 1 }) }}</span>
-          </div>
-          <div class="header-actions">
-            <button class="action-btn" @click.stop="copyCode(index)">
-              {{ t('stamp.common.copy') }}
-            </button>
-            <button class="small-button delete-button" @click.stop="removeCode(index)">
-              {{ t('stamp.common.delete') }}
-            </button>
-          </div>
-        </div>
         <transition name="fade">
         <div v-show="isItemExpanded(index)" class="code-body">
-          <!-- 文本/选择类设置 -->
+          <!-- 文本/选择类设置 -->>
           <div class="settings-section">
             <div class="text-input-item">
               <div class="text-input-header">
@@ -96,7 +76,7 @@
                 :value="code.borderOffset"
                 min="-10"
                 max="20"
-                step="0.01"
+                step="0.05"
                 @input="updateCode(index, 'borderOffset', parseNumber($event))"
               />
             </label>
@@ -116,7 +96,7 @@
                   :value="code.compression"
                   min="0.0"
                   max="3"
-                  step="0.01"
+                  step="0.05"
                   @input="updateCode(index, 'compression', parseNumber($event))"
                 />
                 <button type="button" class="range-btn" @click.stop="adjustCompression(index, 0.01)">▶</button>
@@ -486,7 +466,7 @@ label {
   outline: none;
 }
 
-/* 文本输入项样式（两行显示） */
+/* 文本输入项样式（两行显示）*/
 .text-input-item {
   display: flex;
   flex-direction: column;

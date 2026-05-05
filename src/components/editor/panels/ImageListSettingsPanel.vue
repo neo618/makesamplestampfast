@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="control-group">
     <div class="group-header" @click="toggleExpanded">
       <h3>
@@ -77,7 +77,7 @@
                   type="range"
                   :value="image.positionX"
                   min="-50"
-                  max="50"
+                  max="10"
                   step="0.1"
                   @input="updateImage(index, 'positionX', parseNumber($event))"
                 />
@@ -95,7 +95,7 @@
                   type="range"
                   :value="image.positionY"
                   min="-50"
-                  max="50"
+                  max="10"
                   step="0.1"
                   @input="updateImage(index, 'positionY', parseNumber($event))"
                 />

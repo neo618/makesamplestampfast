@@ -30,64 +30,18 @@
             class="quality-slider"
           />
         </div>
-        <div class="size-setting">
-          <div class="size-setting-header">
-            <label>{{ t('stamp.exportFormat.sizeTitle') }}</label>
-            <button class="size-reset" type="button" @click="resetExportSize">
-              {{ t('stamp.exportFormat.resetSize') }}
-            </button>
+        <div class="qr-code-section">
+          <div class="qr-code-title">{{ t('stamp.exportFormat.qrCodeTitle') }}</div>
+          <div class="qr-code-placeholder">
+            <img src="/pay_qr.png" alt="付款码" class="qr-code-img" />
           </div>
-          <div class="ratio-setting">
-            <label>{{ t('stamp.exportFormat.ratioTitle') }}</label>
-            <div class="ratio-options">
-              <button
-                v-for="option in ratioOptions"
-                :key="option.value"
-                type="button"
-                class="ratio-button"
-                :class="{ active: selectedRatio === option.value }"
-                @click="applyRatio(option.value)"
-              >
-                {{ option.label }}
-              </button>
-            </div>
-            <p class="ratio-hint">{{ t('stamp.exportFormat.ratioHint') }}</p>
-          </div>
-          <div class="size-inputs">
-            <div class="size-field">
-              <span>{{ t('stamp.exportFormat.width') }} (px)</span>
-              <input
-                type="number"
-                v-model.number="exportWidth"
-                :min="MIN_EXPORT_SIZE"
-                :max="MAX_EXPORT_SIZE"
-                @input="handleWidthInput"
-                @change="handleWidthInput"
-              />
-            </div>
-            <div class="size-field">
-              <span>{{ t('stamp.exportFormat.height') }} (px)</span>
-              <input
-                type="number"
-                v-model.number="exportHeight"
-                :min="MIN_EXPORT_SIZE"
-                :max="MAX_EXPORT_SIZE"
-                @input="handleHeightInput"
-                @change="handleHeightInput"
-              />
-            </div>
-          </div>
-          <p class="size-hint">
-            {{ t('stamp.exportFormat.sizeHint', { width: Math.round(defaultExportWidth) || 0, height: Math.round(defaultExportHeight) || 0 }) }}
-          </p>
-          <p class="size-hint">
-            {{ t('stamp.exportFormat.sizeLimit', { min: MIN_EXPORT_SIZE, max: MAX_EXPORT_SIZE }) }}
-          </p>
+          <p class="qr-hint">{{ t('stamp.exportFormat.qrHint') }}</p>
         </div>
       </div>
       <div class="dialog-buttons">
         <button @click="closeFormatDialog" class="cancel-button">{{ t('stamp.exportFormat.cancel') }}</button>
-        <button @click="confirmExport" class="confirm-button">{{ t('stamp.exportFormat.export') }}</button>
+        <button v-if="!hasPaid" @click="confirmPayment" class="confirm-button">导出</button>
+        <button v-else @click="confirmExport" class="confirm-button">{{ t('stamp.exportFormat.export') }}</button>
       </div>
     </div>
   </div>
@@ -129,61 +83,64 @@
 
   <!-- 主内容区域：三栏布局（可复用） -->
   <div class="main-workspace">
-    <!-- 顶部快速工具栏 -->
-    <div class="top-toolbar" v-if="isDrawStampUtilsReady">
-      <div class="toolbar-center">
-        <button class="toolbar-btn" type="button" @click="toolbarAddCompany">
-          <span class="toolbar-icon">文</span>
-          <span class="toolbar-label">{{ t('elementList.buttons.addCompany') }}</span>
-        </button>
-        <button class="toolbar-btn" type="button" @click="toolbarAddStampType">
-          <span class="toolbar-icon">章</span>
-          <span class="toolbar-label">{{ t('elementList.buttons.addStampType') }}</span>
-        </button>
-        <button class="toolbar-btn" type="button" @click="toolbarAddInnerCircle">
-          <span class="toolbar-icon">◎</span>
-          <span class="toolbar-label">{{ t('elementList.buttons.addInnerCircle') }}</span>
-        </button>
-        <button class="toolbar-btn" type="button" @click="toolbarAddImage">
-          <span class="toolbar-icon">🖼️</span>
-          <span class="toolbar-label">{{ t('elementList.buttons.addImage') }}</span>
-        </button>
-        <button class="toolbar-btn" type="button" @click="toolbarAddSvg">
-          <span class="toolbar-icon">SVG</span>
-          <span class="toolbar-label">{{ t('elementList.buttons.uploadSvg') }}</span>
-        </button>
-        <button class="toolbar-btn" type="button" @click="toolbarAddHorizontalLine">
-          <span class="toolbar-icon">─</span>
-          <span class="toolbar-label">{{ t('elementList.buttons.addHorizontalLine') }}</span>
-        </button>
-        <button class="toolbar-btn" type="button" @click="toolbarAddVerticalLine">
-          <span class="toolbar-icon">│</span>
-          <span class="toolbar-label">{{ t('elementList.buttons.addVerticalLine') }}</span>
-        </button>
-      </div>
+    <!-- 顶部标题栏 -->
+    <div class="app-title-bar">
+      <h1 class="app-title">简易快速制图助手</h1>
+      <p class="operation-steps">操作步骤：1. 选择模板 → 2. 点击左侧【参数选择】 → 3. 在【参数设置】下输入名称、调整参数 → 4. 导出图片</p>
     </div>
 
     <div class="stamp-draw-container">
-<!-- 左侧：元素列表 -->
-<ElementList
-      v-if="isDrawStampUtilsReady"
-      ref="elementListRef"
-      :drawStampUtils="drawStampUtils"
-      @selectElement="handleSelectElement"
-      @update-config="handleElementListUpdate"
-      @refresh="handleElementListRefresh"
-    />
-    <div v-else class="side-panel-loading">
-      <div class="loading-spinner"></div>
-      <span>{{ t('common.loading') }}</span>
-    </div>
+      <div class="left-panels">
+        <!-- 左侧：元素列表 -->
+        <ElementList
+          v-if="isDrawStampUtilsReady"
+          ref="elementListRef"
+          :drawStampUtils="drawStampUtils"
+          @selectElement="handleSelectElement"
+          @update-config="handleElementListUpdate"
+          @refresh="handleElementListRefresh"
+        />
+        <div v-else class="side-panel-loading">
+          <div class="loading-spinner"></div>
+          <span>{{ t('common.loading') }}</span>
+        </div>
+
+        <!-- 属性编辑器 -->
+        <PropertiesPanel
+          v-if="isDrawStampUtilsReady"
+          ref="propertiesPanelRef"
+          :drawStampUtils="drawStampUtils"
+          :selectedElement="selectedElement"
+          :elementType="selectedElementType"
+          :elementIndex="selectedElementIndex"
+          @updateDrawStamp="updateDrawStamp"
+        />
+        <div v-else class="side-panel-loading">
+          <div class="loading-spinner"></div>
+          <span>{{ t('common.loading') }}</span>
+        </div>
+      </div>
 
     <!-- 中间：Canvas 绘制区域 -->
     <div class="canvas-area">
       <div class="canvas-header">
         <div class="canvas-tabs">
           <div class="canvas-tab active">
-            <span>Canvas #0</span>
+            <span class="template-select-label">模板选择</span>
+          </div>
+        </div>
+      </div>
+      <div class="template-selector">
+        <div class="template-selector-scroll">
+          <div
+            v-for="(template, index) in templates"
+            :key="'tmpl-' + index"
+            class="template-thumbnail"
+            :class="{ active: selectedTemplateIndex === index }"
+            @click="selectTemplate(template, index)"
+          >
+            <img v-if="template.preview" :src="template.preview" :alt="template.name" />
+            <span class="template-thumbnail-name">{{ template.name }}</span>
           </div>
         </div>
       </div>
@@ -191,45 +148,15 @@
         <canvas ref="stampCanvas" width="600" height="600"></canvas>
       </div>
       <div class="canvas-footer">
-        <input
-          ref="templateFileInput"
-          type="file"
-          accept=".json"
-          style="display: none"
-          @change="loadTemplateFile"
-        />
-        <button class="canvas-action-btn" @click="triggerTemplateFileLoad" :title="t('homepage.canvas.importTemplate')">
-          <span>📥</span>
-        </button>
-        <button class="canvas-action-btn" @click="saveCurrentAsTemplate" :title="t('homepage.canvas.exportTemplate')">
-          <span>📤</span>
-        </button>
-        <button class="canvas-action-btn" @click="resetStamp" :title="t('homepage.canvas.resetStamp')">
-          <span>♻️</span>
-        </button>
         <button
-          class="canvas-action-btn"
+          class="canvas-download-btn"
           @click="saveStampAsPNG"
           :title="t('homepage.canvas.download')"
         >
           <span>💾</span>
+          <span>{{ t('homepage.canvas.download') }}</span>
         </button>
       </div>
-    </div>
-
-    <!-- 右侧：属性编辑器 -->
-    <PropertiesPanel
-      v-if="isDrawStampUtilsReady"
-      ref="propertiesPanelRef"
-      :drawStampUtils="drawStampUtils"
-      :selectedElement="selectedElement"
-      :elementType="selectedElementType"
-      :elementIndex="selectedElementIndex"
-      @updateDrawStamp="updateDrawStamp"
-    />
-    <div v-else class="right-panel-loading">
-      <div class="loading-spinner"></div>
-      <span>{{ t('common.loading') }}</span>
     </div>
     </div>
     
@@ -245,6 +172,32 @@ import { IDrawStampConfig } from '../../DrawStampTypes'
 import ElementList from './ElementList.vue'
 import PropertiesPanel from './PropertiesPanel.vue'
 import { useStampStore } from '../../stores/stampStore'
+
+const templateModules = import.meta.glob('../../assets/templates/*.json', { eager: true })
+
+interface TemplateOption {
+  name: string
+  preview: string
+  config: IDrawStampConfig
+}
+
+const templates = ref<TemplateOption[]>([])
+
+const loadTemplates = () => {
+  const loadedTemplates: TemplateOption[] = []
+  for (const path in templateModules) {
+    const fileName = path.split('/').pop()?.replace('.json', '') || 'template'
+    const module = templateModules[path] as { default: IDrawStampConfig }
+    loadedTemplates.push({
+      name: fileName,
+      preview: '',
+      config: module.default as IDrawStampConfig
+    })
+  }
+  templates.value = loadedTemplates
+}
+
+loadTemplates()
 
 const props = defineProps<{
   /** 传入的印章模板配置，用于初始化或联动 */
@@ -319,19 +272,21 @@ const toolbarAddVerticalLine = () => {
 }
 
 const stampCanvas = ref<any | null>(null)
-const templateFileInput = ref<HTMLInputElement | null>(null)
 const MM_PER_PIXEL = 10 // 毫米换算像素
 const isDraggable = ref(false) // 是否开启拖动
 const showFormatDialog = ref(false)
 const selectedFormat = ref<'png' | 'jpeg' | 'svg'>('png')
 const jpegQuality = ref(92)
-const MIN_EXPORT_SIZE = 100
-const MAX_EXPORT_SIZE = 4096
 const defaultExportWidth = ref(0)
 const defaultExportHeight = ref(0)
-const exportWidth = ref(0)
-const exportHeight = ref(0)
-const selectedRatio = ref<'original' | 'square' | '4:3' | '16:9' | 'custom'>('original')
+const hasPaid = ref(false)
+
+// 模拟付款
+const confirmPayment = () => {
+  hasPaid.value = true
+  // 付款后自动触发导出
+  confirmExport()
+}
 
 // 导出模板元信息弹窗状态
 const showTemplateMetaDialog = ref(false)
@@ -345,62 +300,48 @@ const exportFormats = computed(() => [
   { value: 'svg' as const, name: 'SVG', icon: '📐', desc: t('stamp.exportFormat.svgDesc') }
 ])
 
-const ratioOptions = computed(() => [
-  { value: 'original' as const, label: t('stamp.exportFormat.ratioOriginal') },
-  { value: 'square' as const, label: t('stamp.exportFormat.ratioSquare') },
-  { value: '4:3' as const, label: '4 : 3' },
-  { value: '16:9' as const, label: '16 : 9' },
-  { value: 'custom' as const, label: t('stamp.exportFormat.ratioCustom') }
-])
+const selectedTemplateIndex = ref<number>(-1)
 
-const getRatioValue = (ratio: 'original' | 'square' | '4:3' | '16:9'): number => {
-  if (ratio === 'square') return 1
-  if (ratio === '4:3') return 4 / 3
-  if (ratio === '16:9') return 16 / 9
-  const baseWidth = Math.max(defaultExportWidth.value || MIN_EXPORT_SIZE, MIN_EXPORT_SIZE)
-  const baseHeight = Math.max(defaultExportHeight.value || MIN_EXPORT_SIZE, MIN_EXPORT_SIZE)
-  return baseWidth / baseHeight
-}
-
-const clampExportSize = (value: number, fallback: number) => {
-  if (!value || Number.isNaN(value)) return fallback
-  return Math.min(Math.max(value, MIN_EXPORT_SIZE), MAX_EXPORT_SIZE)
-}
-
-const applyRatio = (ratio: 'original' | 'square' | '4:3' | '16:9' | 'custom') => {
-  selectedRatio.value = ratio
-  if (ratio === 'custom') {
-    return
+const generateTemplatePreviews = async () => {
+  for (const template of templates.value) {
+    const tempCanvas = document.createElement('canvas')
+    tempCanvas.width = 500
+    tempCanvas.height = 500
+    const tempDrawStampUtils = new DrawStampUtils(tempCanvas, 8)
+    template.config.ruler.showRuler = false
+    tempDrawStampUtils.setDrawConfigs(template.config)
+    tempDrawStampUtils.refreshStamp()
+    template.preview = tempCanvas.toDataURL('image/png')
   }
-  const baseWidth = clampExportSize(defaultExportWidth.value, MIN_EXPORT_SIZE)
-  const ratioValue = getRatioValue(ratio)
-  exportWidth.value = Math.round(baseWidth)
-  exportHeight.value = Math.round(baseWidth / ratioValue)
-  exportHeight.value = clampExportSize(exportHeight.value, MIN_EXPORT_SIZE)
-}
-
-const resetExportSize = () => {
-  applyRatio('original')
-}
-
-const handleWidthInput = () => {
-  const fallback = Math.round(defaultExportWidth.value) || MIN_EXPORT_SIZE
-  exportWidth.value = clampExportSize(exportWidth.value, fallback)
-  if (selectedRatio.value !== 'custom') {
-    const ratioValue = getRatioValue(selectedRatio.value)
-    exportHeight.value = Math.round(exportWidth.value / ratioValue)
-    exportHeight.value = clampExportSize(exportHeight.value, Math.round(defaultExportHeight.value) || MIN_EXPORT_SIZE)
+  // 生成预览后，选中模板1作为默认
+  if (templates.value.length > 0 && drawStampUtils) {
+    selectTemplate(templates.value[0], 0)
   }
 }
 
-const handleHeightInput = () => {
-  const fallback = Math.round(defaultExportHeight.value) || MIN_EXPORT_SIZE
-  exportHeight.value = clampExportSize(exportHeight.value, fallback)
-  if (selectedRatio.value !== 'custom') {
-    const ratioValue = getRatioValue(selectedRatio.value)
-    exportWidth.value = Math.round(exportHeight.value * ratioValue)
-    exportWidth.value = clampExportSize(exportWidth.value, Math.round(defaultExportWidth.value) || MIN_EXPORT_SIZE)
+const selectTemplate = async (template: TemplateOption, index: number) => {
+  if (!drawStampUtils) return
+  selectedTemplateIndex.value = index
+  const newConfig = JSON.parse(JSON.stringify(template.config)) as IDrawStampConfig
+  newConfig.ruler.showRuler = true
+  newConfig.ruler.showFullRuler = true
+  newConfig.ruler.showSideRuler = true
+  newConfig.ruler.showCrossLine = true
+  newConfig.ruler.showCurrentPositionText = true
+  newConfig.ruler.showDashLine = true
+  if (newConfig.company) {
+    newConfig.company.startAngle = template.config.company.startAngle
+    newConfig.company.rotateDirection = template.config.company.rotateDirection
   }
+  if (!newConfig.svgList) {
+    newConfig.svgList = []
+  }
+  drawStampUtils.setDrawConfigs(newConfig)
+  stampStore.setConfig(newConfig)
+  syncConfigToParent()
+  drawStamp()
+  await nextTick()
+  propertiesPanelRef.value?.restoreDrawConfigs()
 }
 
 // 绘制工具
@@ -424,6 +365,11 @@ const initDrawStampUtils = () => {
     const initialConfig = JSON.parse(JSON.stringify(props.modelValue)) as IDrawStampConfig
     drawStampUtils.setDrawConfigs(initialConfig)
     stampStore.setConfig(initialConfig)
+  } else if (templates.value.length > 0) {
+    // 否则使用模板1作为默认配置
+    const defaultConfig = JSON.parse(JSON.stringify(templates.value[0].config)) as IDrawStampConfig
+    drawStampUtils.setDrawConfigs(defaultConfig)
+    stampStore.setConfig(defaultConfig)
   } else {
     stampStore.setConfig(drawStampUtils.getDrawConfigs())
   }
@@ -452,63 +398,12 @@ const drawStamp = (refreshSecurityPattern: boolean = false, refreshOld: boolean 
   allTextPaths = [...companyTextPaths, ...codeTextPaths, ...stampTypeTextPaths, ...taxNumberTextPaths]
 }
 
-// 触发文件选择
-const triggerTemplateFileLoad = () => {
-  templateFileInput.value?.click()
-}
-
-// 加载模板文件
-const loadTemplateFile = async (event: Event) => {
-  const inputEl = event.target as HTMLInputElement
-  if (!inputEl.files?.length || !drawStampUtils) return
-
-  try {
-    const file = inputEl.files[0]
-    const text = await file.text()
-    const config = JSON.parse(text) as IDrawStampConfig
-
-    // 设置新的配置
-    const newConfig = JSON.parse(JSON.stringify(config)) as IDrawStampConfig
-    newConfig.ruler.showRuler = true
-    newConfig.ruler.showFullRuler = true
-    newConfig.ruler.showSideRuler = true
-    newConfig.ruler.showCrossLine = true
-    newConfig.ruler.showCurrentPositionText = true
-    newConfig.ruler.showDashLine = true
-
-    if (config.company) {
-      newConfig.company.startAngle = config.company.startAngle
-      newConfig.company.rotateDirection = config.company.rotateDirection
-    }
-
-    if (!newConfig.svgList) {
-      newConfig.svgList = []
-    }
-
-    drawStampUtils.setDrawConfigs(newConfig)
-    stampStore.setConfig(newConfig)
-    syncConfigToParent()
-    drawStamp()
-
-    // 更新编辑器控件
-    await nextTick()
-    propertiesPanelRef.value?.restoreDrawConfigs()
-  } catch (error) {
-    console.error(t('errors.loadTemplateFailed') + ':', error)
-    alert(t('errors.loadTemplateFailed'))
-  } finally {
-    // 清除文件选择，以便可以再次选择同一个文件
-    inputEl.value = ''
-  }
-}
-
 // 保存图片（本地下载，无后端限制）
 const saveStampAsPNG = () => {
   if (!drawStampUtils) return
   const baseSize = drawStampUtils.getExportBaseSize()
   defaultExportWidth.value = Math.round(baseSize.width)
   defaultExportHeight.value = Math.round(baseSize.height)
-  resetExportSize()
   selectedFormat.value = 'png'
   jpegQuality.value = 92
 
@@ -517,18 +412,19 @@ const saveStampAsPNG = () => {
 
 const closeFormatDialog = () => {
   showFormatDialog.value = false
+  hasPaid.value = false
 }
 
 const confirmExport = async () => {
   closeFormatDialog()
 
   if (!drawStampUtils) return
-  const width = clampExportSize(exportWidth.value, Math.round(defaultExportWidth.value) || MIN_EXPORT_SIZE)
-  const height = clampExportSize(exportHeight.value, Math.round(defaultExportHeight.value) || MIN_EXPORT_SIZE)
   const quality = selectedFormat.value === 'jpeg' ? jpegQuality.value / 100 : 0.92
+  const width = Math.round(defaultExportWidth.value) || 400
+  const height = Math.round(defaultExportHeight.value) || 400
 
   // 执行下载
-  drawStampUtils.saveStampAsPNG(selectedFormat.value, quality, Math.round(width), Math.round(height))
+  drawStampUtils.saveStampAsPNG(selectedFormat.value, quality, width, height)
 }
 
 const resetStamp = () => {
@@ -784,6 +680,8 @@ onMounted(async () => {
   })
   isDrawStampUtilsReady.value = true
 
+  generateTemplatePreviews()
+
   // 默认选中基础设置
   await nextTick()
   handleSelectElement('basic-settings', 'basic', 0)
@@ -800,55 +698,44 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* 顶部标题栏 */
+.app-title-bar {
+  padding: 20px 24px;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+  box-shadow: var(--shadow-md);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.app-title {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 1px;
+  text-align: center;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.operation-steps {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.95);
+  text-align: center;
+  font-weight: 400;
+  line-height: 1.5;
+  opacity: 0.95;
+}
+
 /* 主工作区：三栏布局 */
 .main-workspace {
   display: flex;
   flex-direction: column;
-  background: white;
-  border-radius: 12px;
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
   margin-top: 2rem;
   min-height: 600px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.top-toolbar {
-  padding: 8px 16px;
-  border-bottom: 1px solid #e0e0e0;
-  background: #f8f9fa;
-  display: flex;
-  justify-content: center;
-}
-
-.toolbar-center {
-  display: flex;
-  gap: 12px;
-}
-
-.toolbar-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid #d0d7de;
-  background: #ffffff;
-  cursor: pointer;
-  font-size: 13px;
-  color: #374151;
-  transition: all 0.2s ease;
-}
-
-.toolbar-btn:hover {
-  background: #e6f7ff;
-  border-color: #1890ff;
-}
-
-.toolbar-icon {
-  font-size: 14px;
-}
-
-.toolbar-label {
-  white-space: nowrap;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
 }
 
 /* Canvas 区域 */
@@ -856,17 +743,22 @@ onUnmounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: var(--bg-primary);
+  border-radius: 0;
+  box-shadow: var(--shadow-sm);
   overflow: hidden;
 }
 
 .canvas-header {
-  padding: 8px 16px;
-  border-bottom: 1px solid #e0e0e0;
-  background: #fafafa;
+  height: 56px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
   flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
 }
 
 .canvas-tabs {
@@ -874,20 +766,102 @@ onUnmounted(() => {
   gap: 8px;
 }
 
+.template-selector {
+  width: 100%;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 10px 0;
+  flex-shrink: 0;
+}
+
+.template-selector-scroll {
+  display: flex;
+  gap: 12px;
+  padding: 0 16px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+}
+
+.template-selector-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.template-selector-scroll::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+  border-radius: 3px;
+}
+
+.template-selector-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.template-selector-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+.template-thumbnail {
+  flex-shrink: 0;
+  width: 80px;
+  height: 80px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+}
+
+.template-thumbnail:hover {
+  border-color: var(--primary-border);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.template-thumbnail.active {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.template-thumbnail img {
+  width: 100%;
+  height: 60px;
+  object-fit: contain;
+  background: var(--bg-secondary);
+}
+
+.template-thumbnail-name {
+  height: 20px;
+  line-height: 20px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  font-weight: 500;
+}
+
 .canvas-tab {
   padding: 6px 12px;
   background: transparent;
   border: none;
-  border-bottom: 2px solid transparent;
   cursor: pointer;
   font-size: 13px;
-  color: #666;
+  color: rgba(255, 255, 255, 0.9);
   transition: all 0.2s;
 }
 
 .canvas-tab.active {
-  color: #1890ff;
-  border-bottom-color: #1890ff;
+  color: #fff;
+}
+
+.template-select-label {
+  padding: 4px 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.5px;
 }
 
 .canvas-wrapper {
@@ -896,10 +870,10 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   background:
-    linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
-    linear-gradient(-45deg, #f0f0f0 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #f0f0f0 75%),
-    linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+    linear-gradient(45deg, var(--bg-tertiary) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--bg-tertiary) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--bg-tertiary) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--bg-tertiary) 75%);
   background-size: 20px 20px;
   background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
 }
@@ -907,36 +881,110 @@ onUnmounted(() => {
 .canvas-footer {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 12px;
-  padding: 12px;
-  border-top: 1px solid #e0e0e0;
-  background: #fafafa;
+  padding: 12px 20px;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-secondary);
   flex-shrink: 0;
 }
 
-.canvas-action-btn {
-  width: 44px;
-  height: 36px;
-  border-radius: 50%;
-  border: 1px solid #e0e0e0;
-  background: white;
+.canvas-download-btn {
+  min-width: 110px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+  color: white;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
-  transition: all 0.2s;
+  gap: 8px;
+  padding: 0 20px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-md);
+}
+
+.canvas-download-btn:hover {
+  background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary-color) 100%);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.canvas-download-btn span:first-child {
+  font-size: 16px;
+}
+
+.canvas-action-btn {
+  width: 40px;
+  height: 36px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  color: var(--text-secondary);
 }
 
 .canvas-action-btn:hover {
-  background: #e6f7ff;
-  border-color: #1890ff;
-  transform: scale(1.1);
+  background: var(--primary-light);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  transform: scale(1.05);
+  box-shadow: var(--shadow-sm);
 }
 
 .save-count-small {
   font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.qr-code-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+}
+
+.qr-code-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.qr-code-placeholder {
+  width: 200px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.qr-code-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.qr-hint {
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: center;
+  margin: 0;
 }
 
 .meta-field {
@@ -947,17 +995,23 @@ onUnmounted(() => {
 }
 
 .meta-input {
-  padding: 6px 10px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
   font-size: 13px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: all 0.2s ease;
 }
 
 .meta-input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-light);
   outline: none;
+}
+
+.meta-input::placeholder {
+  color: var(--text-tertiary);
 }
 
 /* 左右侧面板 loading 状态 */
@@ -969,15 +1023,15 @@ onUnmounted(() => {
   justify-content: center;
   gap: 8px;
   padding: 16px;
-  color: #999;
+  color: var(--text-secondary);
   font-size: 13px;
 }
 
 .loading-spinner {
-  width: 18px;
-  height: 18px;
-  border: 2px solid #e0e0e0;
-  border-top-color: #1890ff;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-color);
+  border-top-color: var(--primary-color);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -985,6 +1039,23 @@ onUnmounted(() => {
 .stamp-draw-container {
   display: flex;
   flex-direction: row;
+}
+
+.left-panels {
+  display: flex;
+  flex-direction: row;
+  position: relative;
+}
+
+.left-panels::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent 0%, var(--border-color) 10%, var(--border-color) 90%, transparent 100%);
+  z-index: 10;
 }
 
 @keyframes spin {

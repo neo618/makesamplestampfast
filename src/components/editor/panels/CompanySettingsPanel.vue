@@ -8,26 +8,6 @@
     </div>
     <div class="group-content" v-show="expanded">
       <div v-for="(company, index) in companyList" :key="index" class="company-item">
-        <div class="company-header">
-          <div class="header-left">
-            <button
-              class="expand-toggle-btn"
-              @click.stop="toggleItem(index)"
-              :title="isItemExpanded(index) ? t('stamp.common.collapse') : t('stamp.common.expand')"
-            >
-              <span class="expand-icon" :class="{ expanded: isItemExpanded(index) }">▼</span>
-            </button>
-            <span>{{ t('stamp.common.line', { index: index + 1 }) }}</span>
-          </div>
-          <div class="header-actions">
-            <button class="action-btn" @click.stop="copyCompany(index)">
-              {{ t('stamp.common.copy') }}
-            </button>
-            <button class="small-button delete-button" @click.stop="removeCompany(index)">
-              {{ t('stamp.common.delete') }}
-            </button>
-          </div>
-        </div>
         <transition name="fade">
         <div v-show="isItemExpanded(index)" class="company-body">
           <!-- 文本/选择类设置 -->
@@ -204,7 +184,7 @@
                   type="range"
                   :value="company.textDistributionFactor"
                   min="0"
-                  max="50"
+                  max="10"
                   step="0.01"
                   @input="onNumberInput(index, 'textDistributionFactor', $event)"
                 />
@@ -243,7 +223,7 @@
                     type="range"
                     :value="company.rectanglePositionX || 0"
                     min="-50"
-                    max="50"
+                    max="10"
                     step="0.1"
                     @input="onNumberInput(index, 'rectanglePositionX', $event)"
                   />
@@ -262,7 +242,7 @@
                     type="range"
                     :value="company.rectanglePositionY || 0"
                     min="-50"
-                    max="50"
+                    max="10"
                     step="0.1"
                     @input="onNumberInput(index, 'rectanglePositionY', $event)"
                   />

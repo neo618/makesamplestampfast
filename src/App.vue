@@ -17,12 +17,12 @@ import StampWorkspace from './components/editor/StampWorkspace.vue'
   justify-content: center;
   align-items: flex-start;
   padding: 24px;
-  background-color: #f5f5f5;
+  background-color: var(--bg-secondary);
   box-sizing: border-box;
 }
 
 .demo-wrapper {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1400px;
 }
 </style>

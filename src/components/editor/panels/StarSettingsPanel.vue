@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="control-group">
     <div class="group-header" @click="toggleExpanded">
       <h3>
@@ -32,7 +32,7 @@
               type="range"
               :value="config.drawStar.starDiameter ?? 0"
               min="1"
-              max="50"
+              max="10"
               step="0.1"
               @input="updateStar('starDiameter', parseNumber($event))"
             />
@@ -50,7 +50,7 @@
               type="range"
               :value="config.drawStar.starPositionX ?? 0"
               min="-50"
-              max="50"
+              max="10"
               step="0.1"
               @input="updateStar('starPositionX', parseNumber($event))"
             />
@@ -68,7 +68,7 @@
               type="range"
               :value="config.drawStar.starPositionY ?? 0"
               min="-50"
-              max="50"
+              max="10"
               step="0.1"
               @input="updateStar('starPositionY', parseNumber($event))"
             />

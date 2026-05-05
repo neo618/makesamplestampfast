@@ -3,16 +3,6 @@
     <div class="panel-header">
       <h3>{{ t('elementList.title') }}</h3>
     </div>
-    <div class="panel-tabs">
-      <button
-        v-for="tab in tabs"
-        :key="tab.key"
-        :class="['tab-button', { active: activeTab === tab.key }]"
-        @click="activeTab = tab.key"
-      >
-        {{ tab.label }}
-      </button>
-    </div>
     <input
       ref="svgFileInput"
       type="file"
@@ -21,8 +11,7 @@
       @change="handleSvgFileChange"
     />
     <div class="panel-content">
-      <!-- 全部元素 -->
-      <div v-show="activeTab === 'all'" class="element-category">
+      <div class="element-category">
         <div class="element-item"
              :class="{ active: selectedElement === 'basic-settings' }"
              @click.stop="selectElement('basic-settings', 'basic', 0)">
@@ -34,26 +23,11 @@
              :key="`company-${index}`"
              :class="{ active: selectedElement === `company-${index}` }"
              @click.stop="selectElement(`company-${index}`, 'company', index)">
-          <span class="element-icon">📝</span>
-          <span class="element-name" v-if="editingElement !== `company-${index}`" @dblclick.stop="startEdit(`company-${index}`, 'company', index, company.companyName)">
+          <span class="element-icon">🏢</span>
+          <span class="element-name">
             {{ company.companyName || t('elementList.defaults.companyNameIndex', { index: index + 1 }) }}
           </span>
-          <input
-            v-else
-            v-model="editingValue"
-            @blur="saveEdit"
-            @keyup.enter="saveEdit"
-            @keyup.esc="cancelEdit"
-            class="element-edit-input"
-            @click.stop
-            ref="editInputRef"
-          />
 <!--          <span class="element-type">{{ company.shape === 'rectangle' ? '矩形' : '椭圆' }}</span>-->
-          <div class="element-actions" @click.stop>
-            <button class="action-btn edit-btn" @click="startEdit(`company-${index}`, 'company', index, company.companyName)" :title="t('elementList.buttons.edit')">✏️</button>
-            <button class="action-btn clear-btn" @click="clearText('company', index)" :title="t('elementList.buttons.clear')">🗑️</button>
-            <button class="action-btn delete-btn" @click="deleteElement('company', index)" :title="t('elementList.buttons.delete')">❌</button>
-          </div>
         </div>
         <div class="element-item"
              v-for="(type, index) in stampTypeList"
@@ -61,25 +35,10 @@
              :class="{ active: selectedElement === `stampType-${index}` }"
              @click.stop="selectElement(`stampType-${index}`, 'stampType', index)">
           <span class="element-icon">🏷️</span>
-          <span class="element-name" v-if="editingElement !== `stampType-${index}`" @dblclick.stop="startEdit(`stampType-${index}`, 'stampType', index, type.stampType)">
+          <span class="element-name">
             {{ type.stampType || t('elementList.defaults.stampTypeIndex', { index: index + 1 }) }}
           </span>
-          <input
-            v-else
-            v-model="editingValue"
-            @blur="saveEdit"
-            @keyup.enter="saveEdit"
-            @keyup.esc="cancelEdit"
-            class="element-edit-input"
-            @click.stop
-            ref="editInputRef"
-          />
 <!--          <span class="element-type">类型</span>-->
-          <div class="element-actions" @click.stop>
-            <button class="action-btn edit-btn" @click="startEdit(`stampType-${index}`, 'stampType', index, type.stampType)" :title="t('elementList.buttons.edit')">✏️</button>
-            <button class="action-btn clear-btn" @click="clearText('stampType', index)" :title="t('elementList.buttons.clear')">🗑️</button>
-            <button class="action-btn delete-btn" @click="deleteElement('stampType', index)" :title="t('elementList.buttons.delete')">❌</button>
-          </div>
         </div>
         <div
           class="element-item"
@@ -89,74 +48,18 @@
           @click.stop="selectElement(`code-${index}`, 'code', index)"
         >
           <span class="element-icon">🔢</span>
-          <span
-            class="element-name"
-            v-if="editingElement !== `code-${index}`"
-            @dblclick.stop="startEdit(`code-${index}`, 'code', index, code.code || '')"
-          >
+          <span class="element-name">
             {{ code.code || t('elementList.elements.code') + ' ' + (index + 1) }}
           </span>
-          <input
-            v-else
-            v-model="editingValue"
-            @blur="saveEdit"
-            @keyup.enter="saveEdit"
-            @keyup.esc="cancelEdit"
-            class="element-edit-input"
-            @click.stop
-            ref="editInputRef"
-          />
-          <div class="element-actions show-always" @click.stop>
-            <button
-              class="action-btn edit-btn"
-              @click="startEdit(`code-${index}`, 'code', index, code.code || '')"
-              :title="t('elementList.buttons.edit')"
-            >✏️</button>
-            <button
-              class="action-btn clear-btn"
-              @click="clearText('code', index)"
-              :title="t('elementList.buttons.clear')"
-            >🗑️</button>
-            <button
-              class="action-btn delete-btn"
-              @click="deleteElement('code', index)"
-              title="删除"
-            >❌</button>
-          </div>
+
         </div>
-        <div class="element-item"
-             :class="{ active: selectedElement === 'taxNumber' }"
-             @click.stop="selectElement('taxNumber', 'taxNumber', 0)">
-          <span class="element-icon">💼</span>
-          <span class="element-name" v-if="editingElement !== 'taxNumber'" @dblclick.stop="startEdit('taxNumber', 'taxNumber', 0, taxNumber.code || '')">
-            {{ taxNumber.code || t('elementList.elements.taxNumber') + '（' + t('elementList.status.notSet') + '）' }}
-          </span>
-          <input
-            v-else
-            v-model="editingValue"
-            @blur="saveEdit"
-            @keyup.enter="saveEdit"
-            @keyup.esc="cancelEdit"
-            class="element-edit-input"
-            @click.stop
-            ref="editInputRef"
-          />
-<!--          <span class="element-type">税号</span>-->
-          <div class="element-actions show-always" @click.stop>
-            <button class="action-btn edit-btn" @click="startEdit('taxNumber', 'taxNumber', 0, taxNumber.code || '')" :title="t('elementList.buttons.edit')">✏️</button>
-            <button class="action-btn clear-btn" @click="clearText('taxNumber', 0)" :title="t('elementList.buttons.clear')">🗑️</button>
-            <button class="action-btn delete-btn" @click="deleteElement('taxNumber', 0)" title="删除">❌</button>
-          </div>
-        </div>
+
         <div class="element-item"
              :class="{ active: selectedElement === 'star' }"
              @click.stop="selectElement('star', 'star', 0)">
           <span class="element-icon">⭐</span>
           <span class="element-name">{{ t('elementList.elements.star') }}</span>
           <span class="element-type">{{ drawStar.drawStar ? t('elementList.status.enabled') : t('elementList.status.disabled') }}</span>
-          <div class="element-actions show-always" @click.stop>
-            <button class="action-btn delete-btn" @click="deleteElement('star', 0)" :title="t('elementList.buttons.delete')">❌</button>
-          </div>
         </div>
         <div class="element-item"
              v-for="(_, index) in innerCircleList"
@@ -165,9 +68,6 @@
              @click.stop="selectElement(`circle-${index}`, 'circle', index)">
           <span class="element-icon">⭕</span>
           <span class="element-name">{{ t('elementList.defaults.innerCircleIndex', { index: index + 1 }) }}</span>
-          <div class="element-actions show-always" @click.stop>
-            <button class="action-btn delete-btn" @click="deleteElement('circle', index)" title="删除">❌</button>
-          </div>
         </div>
         <div class="element-item"
              v-for="imageInfo in visibleImages"
@@ -176,9 +76,6 @@
              @click.stop="selectElement(`image-${imageInfo.index}`, 'image', imageInfo.index)">
           <span class="element-icon">🖼️</span>
           <span class="element-name">{{ t('elementList.defaults.imageIndex', { index: imageInfo.index + 1 }) }}</span>
-          <div class="element-actions show-always" @click.stop>
-            <button class="action-btn delete-btn" @click="deleteElement('image', imageInfo.index)" title="删除">❌</button>
-          </div>
         </div>
         <div class="element-item"
              v-for="(line, index) in lineList"
@@ -209,263 +106,7 @@
           <span class="element-name">{{ t('elementList.elements.agingEffect') }}</span>
           <span class="element-type">{{ agingEffect.applyAging ? t('elementList.status.enabled') : t('elementList.status.disabled') }}</span>
         </div>
-        <div class="element-item"
-             :class="{ active: selectedElement === 'roughEdge' }"
-             @click.stop="selectElement('roughEdge', 'roughEdge', 0)">
-          <span class="element-icon">🌊</span>
-          <span class="element-name">{{ t('elementList.elements.roughEdge') }}</span>
-          <span class="element-type">{{ roughEdge.drawRoughEdge ? t('elementList.status.enabled') : t('elementList.status.disabled') }}</span>
-        </div>
-        <div class="element-item"
-             :class="{ active: selectedElement === 'security' }"
-             @click.stop="selectElement('security', 'security', 0)">
-          <span class="element-icon">🔒</span>
-          <span class="element-name">{{ t('elementList.elements.securityPattern') }}</span>
-          <span class="element-type">{{ securityPattern.openSecurityPattern ? t('elementList.status.enabled') : t('elementList.status.disabled') }}</span>
-        </div>
-        <div class="line-action-buttons">
-          <button class="add-line-button" @click="addCompanyItem">
-            <span class="add-icon">➕</span>
-            <span>{{ t('elementList.buttons.addCompany') }}</span>
-          </button>
-          <button class="add-line-button" @click="addStampTypeItem">
-            <span class="add-icon">➕</span>
-            <span>{{ t('elementList.buttons.addStampType') }}</span>
-          </button>
-          <button class="add-line-button" @click="addCodeItem">
-            <span class="add-icon">➕</span>
-            <span>{{ t('elementList.elements.code') }}</span>
-          </button>
-        </div>
-      </div>
 
-      <!-- 文字元素 -->
-      <div v-show="activeTab === 'text'" class="element-category">
-        <div class="element-item"
-             v-for="(company, index) in companyList"
-             :key="`company-${index}`"
-             :class="{ active: selectedElement === `company-${index}` }"
-             @click.stop="selectElement(`company-${index}`, 'company', index)">
-          <span class="element-icon">📝</span>
-          <span class="element-name" v-if="editingElement !== `company-${index}`" @dblclick.stop="startEdit(`company-${index}`, 'company', index, company.companyName)">
-            {{ company.companyName || t('elementList.defaults.companyNameIndex', { index: index + 1 }) }}
-          </span>
-          <input
-            v-else
-            v-model="editingValue"
-            @blur="saveEdit"
-            @keyup.enter="saveEdit"
-            @keyup.esc="cancelEdit"
-            class="element-edit-input"
-            @click.stop
-            ref="editInputRef"
-          />
-          <div class="element-actions" @click.stop>
-            <button class="action-btn edit-btn" @click="startEdit(`company-${index}`, 'company', index, company.companyName)" :title="t('elementList.buttons.edit')">✏️</button>
-            <button class="action-btn clear-btn" @click="clearText('company', index)" :title="t('elementList.buttons.clear')">🗑️</button>
-            <button class="action-btn delete-btn" @click="deleteElement('company', index)" :title="t('elementList.buttons.delete')">❌</button>
-          </div>
-        </div>
-        <div class="element-item"
-             v-for="(type, index) in stampTypeList"
-             :key="`stampType-${index}`"
-             :class="{ active: selectedElement === `stampType-${index}` }"
-             @click.stop="selectElement(`stampType-${index}`, 'stampType', index)">
-          <span class="element-icon">🏷️</span>
-          <span class="element-name" v-if="editingElement !== `stampType-${index}`" @dblclick.stop="startEdit(`stampType-${index}`, 'stampType', index, type.stampType)">
-            {{ type.stampType || t('elementList.defaults.stampTypeIndex', { index: index + 1 }) }}
-          </span>
-          <input
-            v-else
-            v-model="editingValue"
-            @blur="saveEdit"
-            @keyup.enter="saveEdit"
-            @keyup.esc="cancelEdit"
-            class="element-edit-input"
-            @click.stop
-            ref="editInputRef"
-          />
-          <div class="element-actions" @click.stop>
-            <button class="action-btn edit-btn" @click="startEdit(`stampType-${index}`, 'stampType', index, type.stampType)" :title="t('elementList.buttons.edit')">✏️</button>
-            <button class="action-btn clear-btn" @click="clearText('stampType', index)" :title="t('elementList.buttons.clear')">🗑️</button>
-            <button class="action-btn delete-btn" @click="deleteElement('stampType', index)" :title="t('elementList.buttons.delete')">❌</button>
-          </div>
-        </div>
-        <div
-          class="element-item"
-          v-for="(code, index) in stampCodeList"
-          :key="`code-text-${index}`"
-          :class="{ active: selectedElement === `code-${index}` }"
-          @click.stop="selectElement(`code-${index}`, 'code', index)"
-        >
-          <span class="element-icon">🔢</span>
-          <span
-            class="element-name"
-            v-if="editingElement !== `code-${index}`"
-            @dblclick.stop="startEdit(`code-${index}`, 'code', index, code.code || '')"
-          >
-            {{ code.code || t('elementList.elements.code') + ' ' + (index + 1) }}
-          </span>
-          <input
-            v-else
-            v-model="editingValue"
-            @blur="saveEdit"
-            @keyup.enter="saveEdit"
-            @keyup.esc="cancelEdit"
-            class="element-edit-input"
-            @click.stop
-            ref="editInputRef"
-          />
-          <div class="element-actions show-always" @click.stop>
-            <button
-              class="action-btn edit-btn"
-              @click="startEdit(`code-${index}`, 'code', index, code.code || '')"
-              :title="t('elementList.buttons.edit')"
-            >✏️</button>
-            <button
-              class="action-btn clear-btn"
-              @click="clearText('code', index)"
-              :title="t('elementList.buttons.clear')"
-            >🗑️</button>
-          </div>
-        </div>
-        <div class="element-item"
-             :class="{ active: selectedElement === 'taxNumber' }"
-             @click.stop="selectElement('taxNumber', 'taxNumber', 0)">
-          <span class="element-icon">💼</span>
-          <span class="element-name" v-if="editingElement !== 'taxNumber'" @dblclick.stop="startEdit('taxNumber', 'taxNumber', 0, taxNumber.code || '')">
-            {{ taxNumber.code || t('elementList.elements.taxNumber') + '（' + t('elementList.status.notSet') + '）' }}
-          </span>
-          <input
-            v-else
-            v-model="editingValue"
-            @blur="saveEdit"
-            @keyup.enter="saveEdit"
-            @keyup.esc="cancelEdit"
-            class="element-edit-input"
-            @click.stop
-            ref="editInputRef"
-          />
-          <div class="element-actions show-always" @click.stop>
-            <button class="action-btn edit-btn" @click="startEdit('taxNumber', 'taxNumber', 0, taxNumber.code || '')" :title="t('elementList.buttons.edit')">✏️</button>
-            <button class="action-btn clear-btn" @click="clearText('taxNumber', 0)" :title="t('elementList.buttons.clear')">🗑️</button>
-          </div>
-        </div>
-        <div class="line-action-buttons">
-          <button class="add-line-button" @click="addCompanyItem">
-            <span class="add-icon">➕</span>
-            <span>{{ t('elementList.buttons.addCompany') }}</span>
-          </button>
-          <button class="add-line-button" @click="addStampTypeItem">
-            <span class="add-icon">➕</span>
-            <span>{{ t('elementList.buttons.addStampType') }}</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- 图形元素 -->
-      <div v-show="activeTab === 'figure'" class="element-category">
-        <div class="element-item"
-             :class="{ active: selectedElement === 'star' }"
-             @click.stop="selectElement('star', 'star', 0)">
-          <span class="element-icon">⭐</span>
-          <span class="element-name">{{ t('elementList.elements.star') }}</span>
-          <span class="element-type">{{ drawStar.drawStar ? t('elementList.status.enabled') : t('elementList.status.disabled') }}</span>
-          <div class="element-actions show-always" @click.stop>
-            <button class="action-btn delete-btn" @click="deleteElement('star', 0)" :title="t('elementList.buttons.delete')">❌</button>
-          </div>
-        </div>
-        <div class="element-item"
-             v-for="(_, index) in innerCircleList"
-             :key="`circle-${index}`"
-             :class="{ active: selectedElement === `circle-${index}` }"
-             @click.stop="selectElement(`circle-${index}`, 'circle', index)">
-          <span class="element-icon">⭕</span>
-          <span class="element-name">{{ t('elementList.defaults.innerCircleIndex', { index: index + 1 }) }}</span>
-          <div class="element-actions show-always" @click.stop>
-            <button class="action-btn delete-btn" @click="deleteElement('circle', index)" title="删除">❌</button>
-          </div>
-        </div>
-        <div class="element-item"
-             v-for="imageInfo in visibleImages"
-             :key="`image-figure-${imageInfo.index}`"
-             :class="{ active: selectedElement === `image-${imageInfo.index}` }"
-             @click.stop="selectElement(`image-${imageInfo.index}`, 'image', imageInfo.index)">
-          <span class="element-icon">🖼️</span>
-          <span class="element-name">{{ t('elementList.defaults.imageIndex', { index: imageInfo.index + 1 }) }}</span>
-          <div class="element-actions show-always" @click.stop>
-            <button class="action-btn delete-btn" @click="deleteElement('image', imageInfo.index)" title="删除">❌</button>
-          </div>
-        </div>
-        <div class="element-item"
-             v-for="(line, index) in lineList"
-             :key="`figure-line-${line.id || index}`"
-             :class="{ active: selectedElement === `line-${index}` }"
-             @click.stop="selectElement(`line-${index}`, 'line', index)">
-          <span class="element-icon">{{ line.type === 'vertical' ? '↕️' : '↔️' }}</span>
-          <span class="element-name">{{ line.type === 'vertical' ? t('elementList.defaults.verticalLineIndex', { index: index + 1 }) : t('elementList.defaults.horizontalLineIndex', { index: index + 1 }) }}</span>
-          <div class="element-actions show-always" @click.stop>
-            <button class="action-btn delete-btn" @click="deleteElement('line', index)" title="删除">❌</button>
-          </div>
-        </div>
-        <div class="element-item"
-             v-for="(svg, index) in svgList"
-             :key="`figure-svg-${svg.id || index}`"
-             :class="{ active: selectedElement === `svg-${index}` }"
-             @click.stop="selectElement(`svg-${index}`, 'svg', index)">
-          <span class="element-icon">🧩</span>
-          <span class="element-name">{{ svg.name || t('elementList.defaults.svgIndex', { index: index + 1 }) }}</span>
-          <div class="element-actions show-always" @click.stop>
-            <button class="action-btn delete-btn" @click="deleteElement('svg', index)" title="删除">❌</button>
-          </div>
-        </div>
-        <div class="line-action-buttons">
-          <button class="add-line-button" @click="addLine('horizontal')">
-            <span class="add-icon">➕</span>
-            <span>{{ t('elementList.buttons.addHorizontalLine') }}</span>
-          </button>
-          <button class="add-line-button" @click="addLine('vertical')">
-            <span class="add-icon">➕</span>
-            <span>{{ t('elementList.buttons.addVerticalLine') }}</span>
-          </button>
-        </div>
-        <button class="add-image-button" @click="addImage">
-          <span class="add-icon">➕</span>
-          <span>{{ t('elementList.buttons.addImage') }}</span>
-        </button>
-        <button class="add-image-button" @click="addInnerCircle">
-          <span class="add-icon">➕</span>
-          <span>{{ t('elementList.buttons.addInnerCircle') }}</span>
-        </button>
-        <button class="add-image-button" @click="triggerSvgUpload">
-          <span class="add-icon">➕</span>
-          <span>{{ t('elementList.buttons.uploadSvg') }}</span>
-        </button>
-      </div>
-
-      <!-- 效果元素 -->
-      <div v-show="activeTab === 'effect'" class="element-category">
-        <div class="element-item"
-             :class="{ active: selectedElement === 'aging' }"
-             @click.stop="selectElement('aging', 'aging', 0)">
-          <span class="element-icon">🕰️</span>
-          <span class="element-name">{{ t('elementList.elements.agingEffect') }}</span>
-          <span class="element-type">{{ agingEffect.applyAging ? t('elementList.status.enabled') : t('elementList.status.disabled') }}</span>
-        </div>
-        <div class="element-item"
-             :class="{ active: selectedElement === 'roughEdge' }"
-             @click.stop="selectElement('roughEdge', 'roughEdge', 0)">
-          <span class="element-icon">🌊</span>
-          <span class="element-name">{{ t('elementList.elements.roughEdge') }}</span>
-          <span class="element-type">{{ roughEdge.drawRoughEdge ? t('elementList.status.enabled') : t('elementList.status.disabled') }}</span>
-        </div>
-        <div class="element-item"
-             :class="{ active: selectedElement === 'security' }"
-             @click.stop="selectElement('security', 'security', 0)">
-          <span class="element-icon">🔒</span>
-          <span class="element-name">{{ t('elementList.elements.securityPattern') }}</span>
-          <span class="element-type">{{ securityPattern.openSecurityPattern ? t('elementList.status.enabled') : t('elementList.status.disabled') }}</span>
-        </div>
       </div>
     </div>
   </div>
@@ -491,23 +132,10 @@ const emit = defineEmits<{
   (e: 'refresh'): void
 }>()
 
-const activeTab = ref<'all' | 'text' | 'figure' | 'effect'>('all')
 const selectedElement = ref<string>('')
 
 // 编辑相关状态
-const editingElement = ref<string>('')
-const editingElementType = ref<string>('')
-const editingElementIndex = ref<number>(-1)
-const editingValue = ref<string>('')
-const editInputRef = ref<HTMLInputElement | null>(null)
 const svgFileInput = ref<HTMLInputElement | null>(null)
-
-const tabs = computed(() => [
-  { key: 'all' as const, label: t('elementList.tabs.all') },
-  { key: 'text' as const, label: t('elementList.tabs.text') },
-  { key: 'figure' as const, label: t('elementList.tabs.figure') },
-  { key: 'effect' as const, label: t('elementList.tabs.effect') }
-])
 
 const stampStore = useStampStore()
 
@@ -542,61 +170,6 @@ const securityPattern = computed(() => config.value.securityPattern || { openSec
 const selectElement = (elementId: string, elementType: string, index: number) => {
   selectedElement.value = elementId
   emit('selectElement', elementId, elementType, index)
-}
-
-// 开始编辑
-const startEdit = (elementId: string, elementType: string, index: number, currentValue: string) => {
-  editingElement.value = elementId
-  editingElementType.value = elementType
-  editingElementIndex.value = index
-  editingValue.value = currentValue || ''
-  nextTick(() => {
-    if (editInputRef.value) {
-      editInputRef.value.focus()
-      editInputRef.value.select()
-    }
-  })
-}
-
-// 保存编辑
-const saveEdit = () => {
-  if (editingElement.value && editingElementType.value !== '' && editingValue.value !== undefined) {
-    const elementType = editingElementType.value
-    const index = editingElementIndex.value
-
-    stampStore.updateConfig((config) => {
-      if (elementType === 'company' && config.companyList && config.companyList[index]) {
-        config.companyList[index].companyName = editingValue.value
-      } else if (elementType === 'stampType' && config.stampTypeList && config.stampTypeList[index]) {
-        config.stampTypeList[index].stampType = editingValue.value
-      } else if (elementType === 'code') {
-        if (!config.stampCodeList) {
-          config.stampCodeList = []
-          if (config.stampCode) {
-            config.stampCodeList.push({ ...config.stampCode })
-          }
-        }
-        if (config.stampCodeList[index]) {
-          config.stampCodeList[index].code = editingValue.value
-        }
-        config.stampCode = config.stampCodeList[0] || config.stampCode
-      } else if (elementType === 'taxNumber') {
-        config.taxNumber.code = editingValue.value
-      }
-    })
-
-    emit('updateConfig')
-  }
-
-  cancelEdit()
-}
-
-// 取消编辑
-const cancelEdit = () => {
-  editingElement.value = ''
-  editingElementType.value = ''
-  editingElementIndex.value = -1
-  editingValue.value = ''
 }
 
 // 清除文字
@@ -977,116 +550,127 @@ defineExpose({
 
 <style scoped>
 .element-list-panel {
-  width: 300px;
-  background: white;
-  border-right: 1px solid #e0e0e0;
+  width: 240px;
+  background: var(--bg-primary);
+  border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  height: 60vh;
-  background-color: #f2f2f2;
+  height: 89vh;
+  box-shadow: var(--shadow-sm);
 }
 
 .panel-header {
-  padding: 16px;
-  border-bottom: 1px solid #e0e0e0;
-  background: #f8f9fa;
+  height: 56px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid var(--border-color);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
 }
 
 .panel-header h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
-  color: #333;
-}
-
-.panel-tabs {
-  display: flex;
-  border-bottom: 1px solid #e0e0e0;
-  background: #f8f9fa;
-}
-
-.tab-button {
-  flex: 1;
-  padding: 12px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  font-size: 14px;
-  color: #666;
-  transition: all 0.2s;
-  border-bottom: 2px solid transparent;
-}
-
-.tab-button:hover {
-  background: #f0f0f0;
-}
-
-.tab-button.active {
-  color: #1890ff;
-  border-bottom-color: #1890ff;
-  background: white;
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  letter-spacing: 0.5px;
 }
 
 .panel-content {
   flex: 1;
   overflow-y: auto;
-  padding: 8px;
+  padding: 12px;
+  background-color: var(--bg-secondary);
+}
+
+.panel-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.panel-content::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+}
+
+.panel-content::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.panel-content::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
 }
 
 .element-category {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .element-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px;
-  border-radius: 6px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   border: 1px solid transparent;
+  background: var(--bg-primary);
+  box-shadow: var(--shadow-sm);
 }
 
 .element-item:hover {
-  background: #f5f5f5;
-  border-color: #e0e0e0;
+  background: var(--bg-primary);
+  border-color: var(--primary-border);
+  box-shadow: var(--shadow-md);
+  transform: translateX(2px);
 }
 
 .element-item.active {
-  background: #e6f7ff;
-  border-color: #1890ff;
+  background: var(--primary-light);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .element-icon {
   font-size: 18px;
   flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .element-name {
   flex: 1;
-  font-size: 14px;
-  color: #333;
+  font-size: 13px;
+  color: var(--text-primary);
+  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .element-type {
-  font-size: 12px;
-  color: #999;
-  padding: 2px 8px;
-  background: #f0f0f0;
-  border-radius: 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  padding: 3px 8px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  font-weight: 500;
 }
 
 .element-actions {
   display: flex;
   gap: 4px;
   opacity: 0;
-  transition: opacity 0.2s;
+  transition: opacity 0.2s ease;
 }
 
 .element-actions.show-always {
@@ -1101,15 +685,22 @@ defineExpose({
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 4px;
+  padding: 6px;
   font-size: 14px;
-  border-radius: 4px;
-  transition: all 0.2s;
+  border-radius: var(--radius);
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
+  color: var(--text-secondary);
+}
+
+.action-btn:hover {
+  background: var(--bg-tertiary);
+  color: var(--primary-color);
+  transform: scale(1.05);
 }
 
 .add-image-button {
@@ -1120,19 +711,21 @@ defineExpose({
   width: 100%;
   padding: 12px;
   margin-top: 8px;
-  background: #f0f0f0;
-  border: 1px dashed #d9d9d9;
-  border-radius: 6px;
+  background: var(--bg-primary);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 0.2s;
-  font-size: 14px;
-  color: #666;
+  transition: all 0.2s ease;
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
 .add-image-button:hover {
-  background: #e6f7ff;
-  border-color: #1890ff;
-  color: #1890ff;
+  background: var(--primary-light);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  box-shadow: var(--shadow-sm);
 }
 
 .line-action-buttons {
@@ -1149,49 +742,40 @@ defineExpose({
   justify-content: center;
   gap: 6px;
   padding: 10px;
-  background: #f5f5f5;
-  border: 1px dashed #d9d9d9;
-  border-radius: 6px;
+  background: var(--bg-primary);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 0.2s;
-  font-size: 14px;
-  color: #666;
+  transition: all 0.2s ease;
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
 .add-line-button:hover {
-  background: #e6f7ff;
-  border-color: #1890ff;
-  color: #1890ff;
+  background: var(--primary-light);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  box-shadow: var(--shadow-sm);
 }
 
 .add-icon {
   font-size: 16px;
 }
 
-.action-btn:hover {
-  background: #e6f7ff;
-}
-
 .edit-btn:hover {
-  background: #e6f7ff;
+  background: var(--primary-light);
+  color: var(--primary-color);
 }
 
 .clear-btn:hover {
-  background: #fff7e6;
+  background: #fff7ed;
+  color: var(--warning-color);
 }
 
 .delete-btn:hover {
-  background: #fff1f0;
-}
-
-.element-edit-input {
-  flex: 1;
-  border: 1px solid #1890ff;
-  border-radius: 4px;
-  padding: 4px 8px;
-  font-size: 14px;
-  outline: none;
-  background: white;
+  background: #fef2f2;
+  color: var(--error-color);
 }
 </style>
 

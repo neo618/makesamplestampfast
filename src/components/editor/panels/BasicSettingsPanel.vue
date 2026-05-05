@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="control-group">
     <div class="group-header" @click="toggleExpanded">
       <h3>
@@ -146,7 +146,7 @@
               type="range"
               :value="props.config.offsetX || 0"
               min="-50"
-              max="50"
+              max="10"
               step="0.1"
               @input="onPositionXInput"
             />
@@ -165,7 +165,7 @@
               type="range"
               :value="props.config.offsetY || 0"
               min="-50"
-              max="50"
+              max="10"
               step="0.1"
               @input="onPositionYInput"
             />
@@ -417,7 +417,7 @@ const onRandomOrganicStyle = () => {
 
 const adjustPositionX = (delta: number) => {
   const currentValue = props.config.offsetX || 0
-  const newValue = Math.max(-50, Math.min(50, currentValue + delta))
+  const newValue = Math.max(-50, Math.min(10, currentValue + delta))
   emit('update-config', (config) => {
     config.offsetX = newValue
   })
@@ -425,7 +425,7 @@ const adjustPositionX = (delta: number) => {
 
 const adjustPositionY = (delta: number) => {
   const currentValue = props.config.offsetY || 0
-  const newValue = Math.max(-50, Math.min(50, currentValue + delta))
+  const newValue = Math.max(-50, Math.min(10, currentValue + delta))
   emit('update-config', (config) => {
     config.offsetY = newValue
   })

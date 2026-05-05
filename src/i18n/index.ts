@@ -35,18 +35,10 @@ const messages: Record<string, any> = {
         jpegDesc: '文件较小，适合网络分享',
         svgDesc: '矢量格式，可无损缩放',
         quality: '图片质量',
-        sizeTitle: '导出尺寸',
-        width: '宽度',
-        height: '高度',
-        resetSize: '恢复默认尺寸',
-        sizeHint: '默认尺寸：{width}px × {height}px',
-        sizeLimit: '支持 {min}px - {max}px 范围',
-        ratioTitle: '固定比例',
-        ratioHint: '选择固定宽高比，或使用自定义尺寸',
-        ratioOriginal: '原始比例',
-        ratioSquare: '正方形',
-        ratioCustom: '自定义',
+        qrCodeTitle: '支持我们',
+        qrHint: '扫码支持我们，感谢您的使用！',
         cancel: '取消',
+        pay: '已付款，导出',
         export: '导出'
       },
       templateMeta: {
@@ -337,7 +329,7 @@ const messages: Record<string, any> = {
       }
     },
     elementList: {
-      title: '元素列表',
+      title: '参数选择',
       tabs: {
         all: '全部',
         text: '文字',
@@ -532,7 +524,7 @@ const messages: Record<string, any> = {
         importTemplate: '导入模板',
         exportTemplate: '导出模板',
         resetStamp: '重置印章',
-        download: '下载',
+        download: '导出',
         joinQQGroup: '加入QQ群'
       },
       templateMeta: {
@@ -680,7 +672,7 @@ const messages: Record<string, any> = {
     },
     common: {
       properties: {
-        title: '属性设置',
+        title: '参数设置',
         showAll: '显示全部'
       },
       language: {
@@ -796,20 +788,12 @@ const messages: Record<string, any> = {
         description: 'Please select the image format you want to export:',
         pngDesc: 'Supports transparent background, suitable for printing',
         jpegDesc: 'Smaller file size, suitable for web sharing',
-        svgDesc: 'Vector format, can be scaled without loss',
+        svgDesc: 'Vector format, scalable without loss',
         quality: 'Image Quality',
-        sizeTitle: 'Export Size',
-        width: 'Width',
-        height: 'Height',
-        resetSize: 'Reset to Default Size',
-        sizeHint: 'Default size: {width}px × {height}px',
-        sizeLimit: 'Supported range: {min}px - {max}px',
-        ratioTitle: 'Aspect Ratio',
-        ratioHint: 'Select a fixed aspect ratio or use custom size',
-        ratioOriginal: 'Original',
-        ratioSquare: 'Square',
-        ratioCustom: 'Custom',
+        qrCodeTitle: 'Support Us',
+        qrHint: 'Scan the QR code to support us. Thank you for using!',
         cancel: 'Cancel',
+        pay: 'Paid, Export',
         export: 'Export'
       },
       templateMeta: {
@@ -1337,7 +1321,7 @@ const messages: Record<string, any> = {
         importTemplate: 'Import Template',
         exportTemplate: 'Export Template',
         resetStamp: 'Reset Stamp',
-        download: 'Download'
+        download: 'Export'
       },
       templateMeta: {
         titlePrompt: 'Enter stamp template title',

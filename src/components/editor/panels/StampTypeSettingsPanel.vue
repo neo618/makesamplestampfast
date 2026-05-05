@@ -8,22 +8,6 @@
     </div>
     <div class="group-content" v-show="expanded">
       <div v-for="(type, index) in stampTypeList" :key="index" class="stamp-type-item">
-        <div class="stamp-type-header">
-          <div class="header-left">
-            <button class="expand-toggle-btn" @click.stop="toggleItem(index)" :title="isItemExpanded(index) ? t('stamp.common.collapse') : t('stamp.common.expand')">
-              <span class="expand-icon" :class="{ expanded: isItemExpanded(index) }">▼</span>
-            </button>
-            <span>{{ t('stamp.stampType.line', { index: index + 1 }) }}</span>
-          </div>
-          <div class="header-actions">
-            <button class="action-btn" @click.stop="copyStampType(index)">
-              {{ t('stamp.common.copy') }}
-            </button>
-            <button class="small-button delete-button" @click.stop="removeStampType(index)">
-              {{ t('stamp.common.delete') }}
-            </button>
-          </div>
-        </div>
         <transition name="fade">
         <div v-show="isItemExpanded(index)" class="stamp-type-body">
           <!-- 文本/选择类设置 -->
@@ -150,7 +134,7 @@
                   type="range"
                   :value="type.positionX || 0"
                   min="-50"
-                  max="50"
+                  max="10"
                   step="0.1"
                   @input="updateStampType(index, 'positionX', parseNumber($event))"
                 />
@@ -168,7 +152,7 @@
                   type="range"
                   :value="type.positionY"
                   min="-50"
-                  max="50"
+                  max="10"
                   step="0.1"
                   @input="updateStampType(index, 'positionY', parseNumber($event))"
                 />

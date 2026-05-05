@@ -90,27 +90,35 @@ const { t } = useI18n()
 <style scoped>
 .control-group {
   margin-bottom: 16px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  background: var(--bg-primary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
   overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.control-group:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-border);
 }
 
 .group-header {
-  padding: 12px 16px;
+  padding: 14px 16px;
   cursor: pointer;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #f8f9fa;
-  border-bottom: 1px solid #e5e7eb;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  user-select: none;
 }
 
 .group-header h3 {
   margin: 0;
   font-size: 15px;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text-primary);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -121,7 +129,7 @@ const { t } = useI18n()
   transition: transform 0.2s ease;
   margin-left: 8px;
   font-size: 12px;
-  color: #6b7280;
+  color: var(--text-tertiary);
 }
 
 .expand-icon.expanded {
@@ -133,36 +141,60 @@ const { t } = useI18n()
   display: flex;
   flex-direction: column;
   gap: 12px;
+  background: var(--bg-primary);
 }
 
 label {
   display: flex;
   flex-direction: column;
   font-size: 13px;
-  color: #374151;
+  color: var(--text-secondary);
   gap: 6px;
+  font-weight: 500;
 }
 
 .checkbox-label {
-  flex-direction: row;
+  flex-direction: row !important;
   align-items: center;
   gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-label input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--primary-color);
 }
 
 input[type='number'],
 input[type='color'] {
-  padding: 6px 10px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
   font-size: 13px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: all 0.2s ease;
 }
 
 input[type='number']:focus,
 input[type='color']:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-light);
   outline: none;
+}
+
+input[type='number']:hover,
+input[type='color']:hover {
+  border-color: var(--primary-border);
+}
+
+input[type='color'] {
+  height: 38px;
+  padding: 4px;
+  cursor: pointer;
 }
 </style>
 

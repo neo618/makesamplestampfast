@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="control-group">
     <div class="group-header" @click="toggleExpanded">
       <h3>
@@ -45,7 +45,7 @@
                 type="number"
                 :value="innerCircle.innerCircleLineRadiusX"
                 min="1"
-                max="50"
+                max="10"
                 step="0.1"
                 @input="updateInnerCircle(index, 'innerCircleLineRadiusX', parseNumber($event))"
               />
@@ -56,7 +56,7 @@
                 type="number"
                 :value="getComputedRadiusY(innerCircle)"
                 min="1"
-                max="50"
+                max="10"
                 step="0.1"
                 :disabled="innerCircle.shape === 'triangle' && (props.config.lockTriangleEquilateral ?? true)"
                 @input="updateInnerCircle(index, 'innerCircleLineRadiusY', parseNumber($event))"
@@ -148,7 +148,7 @@
                   type="range"
                   :value="innerCircle.offsetX ?? 0"
                   min="-50"
-                  max="50"
+                  max="10"
                   step="0.1"
                   @input="updateInnerCircle(index, 'offsetX', parseNumber($event))"
                 />
@@ -166,7 +166,7 @@
                   type="range"
                   :value="innerCircle.offsetY ?? 0"
                   min="-50"
-                  max="50"
+                  max="10"
                   step="0.1"
                   @input="updateInnerCircle(index, 'offsetY', parseNumber($event))"
                 />
