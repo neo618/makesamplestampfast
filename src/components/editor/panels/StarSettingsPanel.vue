@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="control-group">
     <div class="group-header" @click="toggleExpanded">
       <h3>
@@ -31,8 +31,8 @@
             <input
               type="range"
               :value="config.drawStar.starDiameter ?? 0"
-              min="1"
-              max="10"
+              min="0"
+              max="50"
               step="0.1"
               @input="updateStar('starDiameter', parseNumber($event))"
             />
@@ -114,7 +114,7 @@ const updateStar = <K extends keyof IDrawStar>(
 const adjustDiameter = (delta: number) => {
   emit('update-config', (config) => {
     const currentValue = config.drawStar.starDiameter ?? 0
-    const newValue = Math.max(1, Math.min(50, currentValue + delta))
+    const newValue = Math.max(0, Math.min(50, currentValue + delta))
     config.drawStar.starDiameter = newValue
   })
 }
