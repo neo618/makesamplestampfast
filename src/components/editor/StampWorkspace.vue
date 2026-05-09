@@ -159,8 +159,27 @@
           </div>
         </div>
       </div>
-      <div class="canvas-wrapper">
-        <canvas ref="stampCanvas" width="600" height="600"></canvas>
+      <div class="canvas-main-content">
+        <div class="canvas-wrapper">
+          <canvas ref="stampCanvas" width="400" height="400"></canvas>
+        </div>
+        <div class="aging-preview-panel">
+          <div class="aging-preview-header">
+            <h3>做旧效果预览</h3>
+          </div>
+          <div class="aging-preview-grid">
+            <div v-for="level in agingPreviewLevels" :key="level.intensity" class="aging-preview-item">
+              <div class="aging-preview-label">{{ level.intensity }}% - {{ level.label }}</div>
+              <div class="aging-preview-image">
+                <img v-if="agingPreviews[level.intensity]" :src="agingPreviews[level.intensity]" :alt="level.label" />
+                <div v-else class="aging-preview-placeholder">加载中...</div>
+              </div>
+            </div>
+          </div>
+          <div class="aging-preview-footer">
+            <button @click="exportAllAgingVersions" class="export-all-btn">下载全部4个版本</button>
+          </div>
+        </div>
       </div>
       <div class="canvas-footer">
         <button
@@ -287,7 +306,7 @@ const toolbarAddVerticalLine = () => {
 }
 
 const stampCanvas = ref<any | null>(null)
-const MM_PER_PIXEL = 10 // 毫米换算像素
+const MM_PER_PIXEL = 6.67 // 毫米换算像素（适配 400x400 canvas）
 const isDraggable = ref(false) // 是否开启拖动
 const showFormatDialog = ref(false)
 const selectedFormat = ref<'png' | 'jpeg' | 'svg'>('png')
@@ -296,6 +315,16 @@ const defaultExportWidth = ref(0)
 const defaultExportHeight = ref(0)
 const hasPaid = ref(false)
 const exportMultipleAging = ref(false)
+
+// 做旧预览
+const agingPreviews = ref<Record<number, string>>({})
+const agingPreviewLevels = [
+  { intensity: 0, label: '无做旧' },
+  { intensity: 25, label: '轻度做旧' },
+  { intensity: 50, label: '中度做旧' },
+  { intensity: 75, label: '重度做旧' }
+]
+let agingPreviewTimer: number | null = null
 
 // 模拟付款
 const confirmPayment = () => {
@@ -412,6 +441,9 @@ const drawStamp = (refreshSecurityPattern: boolean = false, refreshOld: boolean 
   stampTypeTextPaths = drawStampUtils.drawStampTypeUtils.getTextPaths()
   taxNumberTextPaths = drawStampUtils.drawTaxNumberUtils.getTextPaths()
   allTextPaths = [...companyTextPaths, ...codeTextPaths, ...stampTypeTextPaths, ...taxNumberTextPaths]
+
+  // 生成做旧效果预览
+  generateAgingPreviews()
 }
 
 // 保存图片（本地下载，无后端限制）
@@ -475,6 +507,103 @@ const downloadFile = (dataURL: string, filename: string): Promise<void> => {
     document.body.removeChild(link)
     resolve()
   })
+}
+
+// 生成做旧预览
+const generateAgingPreviews = async () => {
+  if (!drawStampUtils) return
+
+  // 清除之前的定时器
+  if (agingPreviewTimer) {
+    clearTimeout(agingPreviewTimer)
+  }
+
+  // 延迟执行，避免频繁刷新
+  agingPreviewTimer = window.setTimeout(async () => {
+    try {
+      const intensities = [0, 25, 50, 75]
+      const previews: Record<number, string> = {}
+
+      for (const intensity of intensities) {
+        // 临时保存原始配置
+        const originalApplyAging = drawStampUtils.drawStampConfigs.agingEffect.applyAging
+        const originalAgingIntensity = drawStampUtils.drawStampConfigs.agingEffect.agingIntensity
+        const originalAgingParams = [...drawStampUtils.drawStampConfigs.agingEffect.agingEffectParams]
+        const originalShowRuler = drawStampUtils.drawStampConfigs.ruler.showRuler
+        const originalShowCrossLine = drawStampUtils.drawStampConfigs.ruler.showCrossLine
+
+        // 隐藏标尺
+        drawStampUtils.drawStampConfigs.ruler.showRuler = false
+        drawStampUtils.drawStampConfigs.ruler.showCrossLine = false
+
+        // 设置当前做旧强度
+        if (intensity > 0) {
+          drawStampUtils.drawStampConfigs.agingEffect.applyAging = true
+          drawStampUtils.drawStampConfigs.agingEffect.agingIntensity = intensity
+          drawStampUtils.drawStampConfigs.agingEffect.agingEffectParams = []
+        } else {
+          drawStampUtils.drawStampConfigs.agingEffect.applyAging = false
+        }
+
+        // 刷新绘制
+        drawStampUtils.refreshStamp()
+
+        // 等待渲染完成
+        await new Promise(resolve => setTimeout(resolve, 50))
+
+        // 生成预览图
+        const previewCanvas = document.createElement('canvas')
+        const previewSize = 150
+        previewCanvas.width = previewSize
+        previewCanvas.height = previewSize
+        const previewCtx = previewCanvas.getContext('2d')
+
+        if (previewCtx) {
+          // 绘制当前画布内容到小预览图
+          previewCtx.drawImage(drawStampUtils.canvas, 0, 0, previewSize, previewSize)
+
+          // 应用做旧效果
+          if (intensity > 0) {
+            drawStampUtils.addAgingEffect(previewCtx, previewSize, previewSize, true)
+          }
+
+          previews[intensity] = previewCanvas.toDataURL('image/png')
+        }
+
+        // 恢复原始配置
+        drawStampUtils.drawStampConfigs.agingEffect.applyAging = originalApplyAging
+        drawStampUtils.drawStampConfigs.agingEffect.agingIntensity = originalAgingIntensity
+        drawStampUtils.drawStampConfigs.agingEffect.agingEffectParams = originalAgingParams
+        drawStampUtils.drawStampConfigs.ruler.showRuler = originalShowRuler
+        drawStampUtils.drawStampConfigs.ruler.showCrossLine = originalShowCrossLine
+      }
+
+      agingPreviews.value = previews
+    } catch (error) {
+      console.error('生成做旧预览失败:', error)
+    }
+  }, 500)
+}
+
+// 导出所有做旧版本
+const exportAllAgingVersions = async () => {
+  if (!drawStampUtils) return
+
+  const quality = 0.92
+  const agingLevels = [0, 25, 50, 75]
+  const versions = await drawStampUtils.exportMultipleAgingVersions(
+    'png',
+    quality,
+    0,
+    0,
+    agingLevels
+  )
+
+  // 依次下载每个版本
+  for (const version of versions) {
+    await downloadFile(version.dataURL, version.filename)
+    await new Promise(resolve => setTimeout(resolve, 200))
+  }
 }
 
 const resetStamp = () => {
@@ -914,19 +1043,128 @@ onUnmounted(() => {
   letter-spacing: 0.5px;
 }
 
-.canvas-wrapper {
+.canvas-main-content {
   flex: 1;
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  padding: 16px;
+  overflow: hidden;
+}
+
+/* 做旧预览面板 */
+.aging-preview-panel {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.aging-preview-header {
+  padding: 12px 16px;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.aging-preview-header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.5px;
+}
+
+.aging-preview-grid {
+  flex: 1;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+}
+
+.aging-preview-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 8px;
+  transition: all 0.2s ease;
+}
+
+.aging-preview-item:hover {
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.aging-preview-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.aging-preview-image {
+  width: 100%;
+  aspect-ratio: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  background:
-    linear-gradient(45deg, var(--bg-tertiary) 25%, transparent 25%),
-    linear-gradient(-45deg, var(--bg-tertiary) 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, var(--bg-tertiary) 75%),
-    linear-gradient(-45deg, transparent 75%, var(--bg-tertiary) 75%);
-  background-size: 20px 20px;
-  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
 }
+
+.aging-preview-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.aging-preview-placeholder {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+.aging-preview-footer {
+  padding: 12px;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-tertiary);
+}
+
+.export-all-btn {
+  width: 100%;
+  height: 40px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-md);
+}
+
+.export-all-btn:hover {
+  background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary-color) 100%);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.export-all-btn:active {
+  transform: translateY(0);
+}
+
 
 .canvas-footer {
   display: flex;
