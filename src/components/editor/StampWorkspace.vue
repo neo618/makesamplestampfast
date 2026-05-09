@@ -700,15 +700,15 @@ onUnmounted(() => {
 <style scoped>
 /* 顶部标题栏 */
 .app-title-bar {
-  padding: 20px 24px;
+  padding: 12px 24px;
   background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
   box-shadow: var(--shadow-md);
   border-bottom: 1px solid var(--border-color);
 }
 
 .app-title {
-  margin: 0 0 8px 0;
-  font-size: 24px;
+  margin: 0 0 4px 0;
+  font-size: 20px;
   font-weight: 700;
   color: #fff;
   letter-spacing: 1px;
@@ -718,11 +718,11 @@ onUnmounted(() => {
 
 .operation-steps {
   margin: 0;
-  font-size: 14px;
+  font-size: 12px;
   color: rgba(255, 255, 255, 0.95);
   text-align: center;
   font-weight: 400;
-  line-height: 1.5;
+  line-height: 1.4;
   opacity: 0.95;
 }
 
@@ -731,11 +731,11 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   background: var(--bg-primary);
-  border-radius: var(--radius-lg);
-  margin-top: 2rem;
+  border-radius: 0;
+  margin-top: 0;
   min-height: 600px;
-  box-shadow: var(--shadow-lg);
-  border: 1px solid var(--border-color);
+  box-shadow: none;
+  border: none;
 }
 
 /* Canvas 区域 */
