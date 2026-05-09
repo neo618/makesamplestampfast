@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="control-group">
     <div class="group-header" @click="toggleExpanded">
       <h3>
@@ -124,9 +124,6 @@
         </div>
         </transition>
       </div>
-      <button class="add-button" @click="addImage">
-        {{ t('stamp.common.addNew') }}
-      </button>
     </div>
   </div>
 </template>

@@ -10,7 +10,7 @@
       <div v-for="(code, index) in codeList" :key="index" class="code-item">
         <transition name="fade">
         <div v-show="isItemExpanded(index)" class="code-body">
-          <!-- 文本/选择类设置 -->>
+          <!-- 文本/选择类设置 -->
           <div class="settings-section">
             <div class="text-input-item">
               <div class="text-input-header">
@@ -104,7 +104,7 @@
             </div>
             <div class="range-item">
               <div class="range-header">
-                <span class="range-label-text">{{ t('stamp.code.distribution') }}</span>
+                <span class="range-label-text">字的间隔</span>
                 <span class="range-value-display">[ {{ code.textDistributionFactor.toFixed(1) }} ]</span>
               </div>
               <div class="range-container">
@@ -124,7 +124,6 @@
         </div>
         </transition>
       </div>
-      <button class="add-button" @click="addCode">{{ t('stamp.common.addNew') }}</button>
     </div>
   </div>
 </template>

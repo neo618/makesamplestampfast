@@ -84,80 +84,13 @@
                 @input="onNumberInput(index, 'borderOffset', $event)"
               />
             </label>
-            <template v-if="company.shape === 'ellipse'">
-              <label class="inline-label">
-                <span class="label-text">{{ t('stamp.company.rotateDirection') }}:</span>
-                <select :value="company.rotateDirection" @change="onFieldInput(index, 'rotateDirection', $event)">
-                  <option value="clockwise">{{ t('stamp.company.clockwise') }}</option>
-                  <option value="counterclockwise">{{ t('stamp.company.counterclockwise') }}</option>
-                </select>
-              </label>
-            </template>
-
-            <template v-else>
-              <label class="inline-label">
-                <span class="label-text">{{ t('stamp.company.textDirection') }}:</span>
-                <select :value="company.rectangleTextDirection" @change="onFieldInput(index, 'rectangleTextDirection', $event)">
-                  <option value="horizontal">{{ t('stamp.company.textDirectionOptions.horizontal') }}</option>
-                  <option value="vertical">{{ t('stamp.company.textDirectionOptions.vertical') }}</option>
-                </select>
-              </label>
-              <label class="inline-label">
-                <span class="label-text">{{ t('stamp.company.textPosition') }}:</span>
-                <select :value="company.rectangleTextPosition" @change="onFieldInput(index, 'rectangleTextPosition', $event)">
-                  <option value="top">{{ t('stamp.company.textPositionOptions.top') }}</option>
-                  <option value="bottom">{{ t('stamp.company.textPositionOptions.bottom') }}</option>
-                  <option value="left">{{ t('stamp.company.textPositionOptions.left') }}</option>
-                  <option value="right">{{ t('stamp.company.textPositionOptions.right') }}</option>
-                  <option value="center">{{ t('stamp.company.textPositionOptions.center') }}</option>
-                </select>
-              </label>
-              <label v-if="company.rectangleTextDirection === 'horizontal'" class="inline-label">
-                <span class="label-text">{{ t('stamp.company.horizontalAlign') }}:</span>
-                <select :value="company.rectangleTextAlignment" @change="onFieldInput(index, 'rectangleTextAlignment', $event)">
-                  <option value="left">{{ t('stamp.company.horizontalAlignOptions.left') }}</option>
-                  <option value="center">{{ t('stamp.company.horizontalAlignOptions.center') }}</option>
-                  <option value="right">{{ t('stamp.company.horizontalAlignOptions.right') }}</option>
-                </select>
-              </label>
-              <label v-else class="inline-label">
-                <span class="label-text">{{ t('stamp.company.verticalAlign') }}:</span>
-                <select :value="company.rectangleVerticalAlignment" @change="onFieldInput(index, 'rectangleVerticalAlignment', $event)">
-                  <option value="top">{{ t('stamp.company.verticalAlignOptions.top') }}</option>
-                  <option value="center">{{ t('stamp.company.verticalAlignOptions.center') }}</option>
-                  <option value="bottom">{{ t('stamp.company.verticalAlignOptions.bottom') }}</option>
-                </select>
-              </label>
-              <label v-if="company.rectangleTextDirection === 'vertical'" class="inline-label">
-                <span class="label-text">{{ t('stamp.company.lineSpacing') }}:</span>
-                <input
-                  type="number"
-                  :value="company.rectangleLineSpacing"
-                  min="0"
-                  max="10"
-                  step="0.1"
-                  @input="onNumberInput(index, 'rectangleLineSpacing', $event)"
-                />
-              </label>
-              <label class="inline-label">
-                <span class="label-text">{{ t('stamp.company.textMargin') }}:</span>
-                <input
-                  type="number"
-                  :value="company.rectangleTextMargin"
-                  min="0"
-                  max="20"
-                  step="0.1"
-                  @input="onNumberInput(index, 'rectangleTextMargin', $event)"
-                />
-              </label>
-            </template>
           </div>
 
           <!-- 拖动条类设置 -->
           <div class="range-section">
             <div class="range-item">
               <div class="range-header">
-                <span class="range-label-text">{{ t('stamp.company.compression') }}</span>
+                <span class="range-label-text">字的胖瘦</span>
                 <span class="range-value-display">[ {{ company.compression.toFixed(2) }} ]</span>
               </div>
               <div class="range-container">
@@ -175,7 +108,7 @@
             </div>
             <div class="range-item">
               <div class="range-header">
-                <span class="range-label-text">{{ t('stamp.company.distribution') }}</span>
+                <span class="range-label-text">字的间隔</span>
                 <span class="range-value-display">[ {{ company.textDistributionFactor.toFixed(2) }} ]</span>
               </div>
               <div class="range-container">
@@ -191,71 +124,10 @@
                 <button type="button" class="range-btn" @click.stop="adjustDistribution(index, 0.01)">▶</button>
               </div>
             </div>
-            <template v-if="company.shape === 'ellipse'">
-              <div class="range-item">
-                <div class="range-header">
-                  <span class="range-label-text">{{ t('stamp.company.startAngle') }}</span>
-                  <span class="range-value-display">[ {{ (company.startAngle * 180 / Math.PI).toFixed(0) }}° ]</span>
-                </div>
-                <div class="range-container">
-                  <button type="button" class="range-btn" @click.stop="adjustStartAngle(index, -0.1)">◀</button>
-                  <input
-                    type="range"
-                    :value="(company.startAngle * 180 / Math.PI)"
-                    min="-360"
-                    max="360"
-                    step="1"
-                    @input="onStartAngleInput(index, $event)"
-                  />
-                  <button type="button" class="range-btn" @click.stop="adjustStartAngle(index, 0.1)">▶</button>
-                </div>
-              </div>
-            </template>
-            <template v-else>
-              <div class="range-item">
-                <div class="range-header">
-                  <span class="range-label-text">水平位置调整 (mm)</span>
-                  <span class="range-value-display">[ {{ (company.rectanglePositionX || 0).toFixed(1) }} ]</span>
-                </div>
-                <div class="range-container">
-                  <button type="button" class="range-btn" @click.stop="adjustRectanglePositionX(index, -0.1)">◀</button>
-                  <input
-                    type="range"
-                    :value="company.rectanglePositionX || 0"
-                    min="-50"
-                    max="10"
-                    step="0.1"
-                    @input="onNumberInput(index, 'rectanglePositionX', $event)"
-                  />
-                  <button type="button" class="range-btn" @click.stop="adjustRectanglePositionX(index, 0.1)">▶</button>
-                </div>
-                <span class="help-text">正数向右，负数向左</span>
-              </div>
-              <div class="range-item">
-                <div class="range-header">
-                  <span class="range-label-text">垂直位置调整 (mm)</span>
-                  <span class="range-value-display">[ {{ (company.rectanglePositionY || 0).toFixed(1) }} ]</span>
-                </div>
-                <div class="range-container">
-                  <button type="button" class="range-btn" @click.stop="adjustRectanglePositionY(index, -0.1)">◀</button>
-                  <input
-                    type="range"
-                    :value="company.rectanglePositionY || 0"
-                    min="-50"
-                    max="10"
-                    step="0.1"
-                    @input="onNumberInput(index, 'rectanglePositionY', $event)"
-                  />
-                  <button type="button" class="range-btn" @click.stop="adjustRectanglePositionY(index, 0.1)">▶</button>
-                </div>
-                <span class="help-text">正数向下，负数向上</span>
-              </div>
-            </template>
           </div>
         </div>
         </transition>
       </div>
-      <button class="add-button" @click="addCompany">{{ t('stamp.common.addNew') }}</button>
     </div>
   </div>
 </template>
@@ -492,12 +364,12 @@ const addCompany = () => {
         adjustEllipseTextFactor: 0.5,
         startAngle: 0,
         rotateDirection: 'counterclockwise',
-        rectangleTextDirection: last?.rectangleTextDirection || 'horizontal',
+        rectangleTextDirection: last?.rectangleTextDirection || 'vertical',
         rectangleTextPosition: nextPosition,
         rectangleTextAlignment: last?.rectangleTextAlignment || 'center',
         rectangleVerticalAlignment: last?.rectangleVerticalAlignment || 'center',
         rectangleLineSpacing: last?.rectangleLineSpacing || 0,
-        rectangleTextMargin: last?.rectangleTextMargin || 1,
+        rectangleTextMargin: last?.rectangleTextMargin || 4,
         rectanglePositionX: last?.rectanglePositionX || 0,
         rectanglePositionY: last?.rectanglePositionY || 0
       }

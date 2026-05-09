@@ -125,25 +125,7 @@
             </div>
             <div class="range-item">
               <div class="range-header">
-                <span class="range-label-text">{{ t('stamp.stampType.horizontalPositionX') }}</span>
-                <span class="range-value-display">[ {{ (type.positionX || 0).toFixed(1) }} ]</span>
-              </div>
-              <div class="range-container">
-                <button type="button" class="range-btn" @click.stop="adjustPositionX(index, -0.1)">◀</button>
-                <input
-                  type="range"
-                  :value="type.positionX || 0"
-                  min="-50"
-                  max="10"
-                  step="0.1"
-                  @input="updateStampType(index, 'positionX', parseNumber($event))"
-                />
-                <button type="button" class="range-btn" @click.stop="adjustPositionX(index, 0.1)">▶</button>
-              </div>
-            </div>
-            <div class="range-item">
-              <div class="range-header">
-                <span class="range-label-text">{{ t('stamp.stampType.verticalPositionY') }}</span>
+                <span class="range-label-text">垂直位置 Y (mm)</span>
                 <span class="range-value-display">[ {{ type.positionY.toFixed(1) }} ]</span>
               </div>
               <div class="range-container">
@@ -159,31 +141,10 @@
                 <button type="button" class="range-btn" @click.stop="adjustPositionY(index, 0.1)">▶</button>
               </div>
             </div>
-            <div class="range-item">
-              <div class="range-header">
-                <span class="range-label-text">{{ t('stamp.stampType.rotationAngle') }}</span>
-                <span class="range-value-display">[ {{ (type.rotation || 0).toFixed(1) }}° ]</span>
-              </div>
-              <div class="range-container">
-                <button type="button" class="range-btn" @click.stop="adjustRotation(index, -0.1)">◀</button>
-                <input
-                  type="range"
-                  :value="type.rotation || 0"
-                  min="-180"
-                  max="180"
-                  step="0.1"
-                  @input="updateStampType(index, 'rotation', parseNumber($event))"
-                />
-                <button type="button" class="range-btn" @click.stop="adjustRotation(index, 0.1)">▶</button>
-              </div>
-            </div>
           </div>
         </div>
         </transition>
       </div>
-      <button class="add-button" @click="addStampType">
-        {{ t('stamp.stampType.addNew') }}
-      </button>
     </div>
   </div>
 </template>
