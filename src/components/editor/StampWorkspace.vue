@@ -30,6 +30,21 @@
             class="quality-slider"
           />
         </div>
+        <div class="aging-options-section">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              v-model="exportMultipleAging"
+            />
+            {{ t('stamp.exportFormat.exportMultipleAging') }}
+          </label>
+          <div v-if="exportMultipleAging" class="aging-levels-info">
+            <span class="aging-level-tag">0% - {{ t('stamp.exportFormat.noAging') }}</span>
+            <span class="aging-level-tag">25% - {{ t('stamp.exportFormat.lightAging') }}</span>
+            <span class="aging-level-tag">50% - {{ t('stamp.exportFormat.mediumAging') }}</span>
+            <span class="aging-level-tag">75% - {{ t('stamp.exportFormat.heavyAging') }}</span>
+          </div>
+        </div>
         <div class="qr-code-section">
           <div class="qr-code-title">{{ t('stamp.exportFormat.qrCodeTitle') }}</div>
           <div class="qr-code-placeholder">
@@ -280,6 +295,7 @@ const jpegQuality = ref(92)
 const defaultExportWidth = ref(0)
 const defaultExportHeight = ref(0)
 const hasPaid = ref(false)
+const exportMultipleAging = ref(false)
 
 // 模拟付款
 const confirmPayment = () => {
@@ -423,8 +439,42 @@ const confirmExport = async () => {
   const width = Math.round(defaultExportWidth.value) || 400
   const height = Math.round(defaultExportHeight.value) || 400
 
-  // 执行下载
-  drawStampUtils.saveStampAsPNG(selectedFormat.value, quality, width, height)
+  if (exportMultipleAging.value) {
+    // 导出4个不同做旧程度的版本
+    const agingLevels = [0, 25, 50, 75]
+    const versions = await drawStampUtils.exportMultipleAgingVersions(
+      selectedFormat.value === 'svg' ? 'png' : selectedFormat.value,
+      quality,
+      width,
+      height,
+      agingLevels
+    )
+
+    // 依次下载每个版本
+    for (const version of versions) {
+      await downloadFile(version.dataURL, version.filename)
+      // 每个下载之间添加短暂延迟，避免浏览器阻止
+      await new Promise(resolve => setTimeout(resolve, 200))
+    }
+  } else {
+    // 执行单个下载
+    drawStampUtils.saveStampAsPNG(selectedFormat.value, quality, width, height)
+  }
+
+  // 重置多版本导出选项
+  exportMultipleAging.value = false
+}
+
+const downloadFile = (dataURL: string, filename: string): Promise<void> => {
+  return new Promise((resolve) => {
+    const link = document.createElement('a')
+    link.href = dataURL
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    resolve()
+  })
 }
 
 const resetStamp = () => {
@@ -700,15 +750,15 @@ onUnmounted(() => {
 <style scoped>
 /* 顶部标题栏 */
 .app-title-bar {
-  padding: 20px 24px;
+  padding: 12px 24px;
   background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
   box-shadow: var(--shadow-md);
   border-bottom: 1px solid var(--border-color);
 }
 
 .app-title {
-  margin: 0 0 8px 0;
-  font-size: 24px;
+  margin: 0 0 4px 0;
+  font-size: 20px;
   font-weight: 700;
   color: #fff;
   letter-spacing: 1px;
@@ -718,11 +768,11 @@ onUnmounted(() => {
 
 .operation-steps {
   margin: 0;
-  font-size: 14px;
+  font-size: 12px;
   color: rgba(255, 255, 255, 0.95);
   text-align: center;
   font-weight: 400;
-  line-height: 1.5;
+  line-height: 1.4;
   opacity: 0.95;
 }
 
@@ -731,11 +781,11 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   background: var(--bg-primary);
-  border-radius: var(--radius-lg);
-  margin-top: 2rem;
+  border-radius: 0;
+  margin-top: 0;
   min-height: 600px;
-  box-shadow: var(--shadow-lg);
-  border: 1px solid var(--border-color);
+  box-shadow: none;
+  border: none;
 }
 
 /* Canvas 区域 */
@@ -1077,6 +1127,100 @@ onUnmounted(() => {
   .canvas-area {
     min-height: 400px;
   }
+}
+
+.quality-slider {
+  width: 100%;
+  margin-top: 8px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--bg-tertiary);
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.quality-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quality-slider::-webkit-slider-thumb:hover {
+  background: var(--primary-hover);
+  transform: scale(1.1);
+}
+
+.quality-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.quality-slider::-moz-range-thumb:hover {
+  background: var(--primary-hover);
+  transform: scale(1.1);
+}
+
+/* 做旧效果选项区域 */
+.aging-options-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.aging-options-section .checkbox-label {
+  flex-direction: row !important;
+  align-items: center;
+  cursor: pointer;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.aging-options-section .checkbox-label input[type="checkbox"] {
+  margin: 0;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--primary-color);
+}
+
+.aging-levels-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color);
+}
+
+.aging-level-tag {
+  padding: 4px 10px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.aging-level-tag:hover {
+  background: var(--primary-light);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
 }
 </style>
 

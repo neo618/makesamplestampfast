@@ -1008,6 +1008,149 @@ export class DrawStampUtils {
     }
 
     /**
+     * 导出多个不同做旧程度的版本
+     * @param format 图片格式
+     * @param quality 图片质量
+     * @param targetWidth 目标宽度
+     * @param targetHeight 目标高度
+     * @param agingLevels 做旧程度数组 [强度百分比, ...]
+     * @returns Promise<Array<{canvas: HTMLCanvasElement, intensity: number, dataURL: string, filename: string}>>
+     */
+    async exportMultipleAgingVersions(
+        format: 'png' | 'jpeg' = 'png',
+        quality: number = 0.92,
+        targetWidth?: number,
+        targetHeight?: number,
+        agingLevels: number[] = [0, 25, 50, 75]
+    ): Promise<Array<{canvas: HTMLCanvasElement, intensity: number, dataURL: string, filename: string}>> {
+        const results: Array<{canvas: HTMLCanvasElement, intensity: number, dataURL: string, filename: string}> = []
+
+        // 图像与边框的间距
+        const imagePadding = 1
+        const stampWidth = (this.drawStampConfigs.width + imagePadding * 2) * this.mmToPixel
+        const stampHeight = (this.drawStampConfigs.height + imagePadding * 2) * this.mmToPixel
+        const exportWidth = targetWidth && targetWidth > 0 ? targetWidth : stampWidth
+        const exportHeight = targetHeight && targetHeight > 0 ? targetHeight : stampHeight
+
+        // 隐藏标尺
+        const originalShowCrossLine = this.drawStampConfigs.ruler.showCrossLine
+        const originalShowRuler = this.drawStampConfigs.ruler.showRuler
+        const originalShowDashLine = this.drawStampConfigs.ruler.showDashLine
+        const originalShowSideRuler = this.drawStampConfigs.ruler.showSideRuler
+        const originalShowFullRuler = this.drawStampConfigs.ruler.showFullRuler
+        const originalShowCurrentPositionText = this.drawStampConfigs.ruler.showCurrentPositionText
+        const originalApplyAging = this.drawStampConfigs.agingEffect.applyAging
+        const originalAgingIntensity = this.drawStampConfigs.agingEffect.agingIntensity
+        const originalAgingParams = [...this.drawStampConfigs.agingEffect.agingEffectParams]
+
+        this.drawStampConfigs.ruler.showCrossLine = false
+        this.drawStampConfigs.ruler.showRuler = false
+        this.drawStampConfigs.ruler.showDashLine = false
+        this.drawStampConfigs.ruler.showSideRuler = false
+        this.drawStampConfigs.ruler.showFullRuler = false
+        this.drawStampConfigs.ruler.showCurrentPositionText = false
+
+        for (const intensity of agingLevels) {
+            // 设置当前做旧强度
+            if (intensity > 0) {
+                this.drawStampConfigs.agingEffect.applyAging = true
+                this.drawStampConfigs.agingEffect.agingIntensity = intensity
+                this.drawStampConfigs.agingEffect.agingEffectParams = []
+            } else {
+                this.drawStampConfigs.agingEffect.applyAging = false
+            }
+
+            // 刷新绘制
+            this.refreshStamp()
+
+            // 等待渲染完成
+            await new Promise(resolve => setTimeout(resolve, 50))
+
+            // 创建画布
+            const saveCanvas = document.createElement('canvas')
+            saveCanvas.width = stampWidth
+            saveCanvas.height = stampHeight
+            const saveCtx = saveCanvas.getContext('2d')
+            if (!saveCtx) continue
+
+            saveCtx.clearRect(0, 0, stampWidth, stampHeight)
+
+            saveCtx.drawImage(
+                this.canvas,
+                RULER_WIDTH * this.mmToPixel + this.stampOffsetX * this.mmToPixel,
+                RULER_HEIGHT * this.mmToPixel + this.stampOffsetY * this.mmToPixel,
+                stampWidth,
+                stampHeight,
+                imagePadding * this.mmToPixel,
+                imagePadding * this.mmToPixel,
+                stampWidth,
+                stampHeight
+            )
+
+            // 应用做旧效果
+            if (intensity > 0) {
+                this.addAgingEffect(saveCtx, stampWidth, stampHeight, true)
+            }
+
+            // 缩放
+            let outputCanvas = saveCanvas
+            if (exportWidth !== stampWidth || exportHeight !== stampHeight) {
+                const scaledCanvas = document.createElement('canvas')
+                scaledCanvas.width = exportWidth
+                scaledCanvas.height = exportHeight
+                const scaledCtx = scaledCanvas.getContext('2d')
+                if (scaledCtx) {
+                    scaledCtx.drawImage(saveCanvas, 0, 0, exportWidth, exportHeight)
+                    outputCanvas = scaledCanvas
+                }
+            }
+
+            // 生成数据 URL
+            let dataURL: string
+            if (format === 'jpeg') {
+                const tempCanvas = document.createElement('canvas')
+                tempCanvas.width = outputCanvas.width
+                tempCanvas.height = outputCanvas.height
+                const tempCtx = tempCanvas.getContext('2d')
+                if (tempCtx) {
+                    tempCtx.fillStyle = '#FFFFFF'
+                    tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height)
+                    tempCtx.drawImage(outputCanvas, 0, 0)
+                    dataURL = tempCanvas.toDataURL(`image/${format}`, quality)
+                } else {
+                    dataURL = outputCanvas.toDataURL(`image/${format}`, quality)
+                }
+            } else {
+                dataURL = outputCanvas.toDataURL(`image/${format}`)
+            }
+
+            const filename = `mystamp_aging_${intensity}%.${format === 'jpeg' ? 'jpg' : 'png'}`
+
+            results.push({
+                canvas: outputCanvas,
+                intensity,
+                dataURL,
+                filename
+            })
+        }
+
+        // 恢复原始配置
+        this.drawStampConfigs.ruler.showCrossLine = originalShowCrossLine
+        this.drawStampConfigs.ruler.showRuler = originalShowRuler
+        this.drawStampConfigs.ruler.showDashLine = originalShowDashLine
+        this.drawStampConfigs.ruler.showSideRuler = originalShowSideRuler
+        this.drawStampConfigs.ruler.showFullRuler = originalShowFullRuler
+        this.drawStampConfigs.ruler.showCurrentPositionText = originalShowCurrentPositionText
+        this.drawStampConfigs.agingEffect.applyAging = originalApplyAging
+        this.drawStampConfigs.agingEffect.agingIntensity = originalAgingIntensity
+        this.drawStampConfigs.agingEffect.agingEffectParams = originalAgingParams
+
+        this.refreshStamp()
+
+        return results
+    }
+
+    /**
      * 获取印章图片的 base64 数据
      * @param format 图片格式
      * @param quality 图片质量（仅对 JPEG 有效）
