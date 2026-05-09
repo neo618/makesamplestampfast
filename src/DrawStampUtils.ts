@@ -1300,9 +1300,9 @@ export class DrawStampUtils {
         this.canvasCtx.scale(this.scale, this.scale);
 
 
-        // 设置起始点为距离左边和上边 5mm 的位置
-        const startX = (this.drawStampConfigs.width / 2) * 10 + RULER_WIDTH * this.mmToPixel;
-        const startY = (this.drawStampConfigs.height / 2) * 10 + RULER_HEIGHT * this.mmToPixel;
+        // 设置起始点：标尺外的主绘制区域中心
+        const startX = RULER_WIDTH * this.mmToPixel + (this.drawStampConfigs.width / 2) * this.mmToPixel;
+        const startY = RULER_HEIGHT * this.mmToPixel + (this.drawStampConfigs.height / 2) * this.mmToPixel;
         const x = startX / this.scale;
         const y = startY / this.scale;
 

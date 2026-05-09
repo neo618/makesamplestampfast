@@ -23,7 +23,7 @@
              :key="`company-${index}`"
              :class="{ active: selectedElement === `company-${index}` }"
              @click.stop="selectElement(`company-${index}`, 'company', index)">
-          <span class="element-icon">🏢</span>
+          <span class="element-icon">①</span>
           <span class="element-name">
             {{ company.companyName || t('elementList.defaults.companyNameIndex', { index: index + 1 }) }}
           </span>
@@ -34,7 +34,7 @@
              :key="`stampType-${index}`"
              :class="{ active: selectedElement === `stampType-${index}` }"
              @click.stop="selectElement(`stampType-${index}`, 'stampType', index)">
-          <span class="element-icon">🏷️</span>
+          <span class="element-icon">②</span>
           <span class="element-name">
             {{ type.stampType || t('elementList.defaults.stampTypeIndex', { index: index + 1 }) }}
           </span>
@@ -47,7 +47,7 @@
           :class="{ active: selectedElement === `code-${index}` }"
           @click.stop="selectElement(`code-${index}`, 'code', index)"
         >
-          <span class="element-icon">🔢</span>
+          <span class="element-icon">③</span>
           <span class="element-name">
             {{ code.code || t('elementList.elements.code') + ' ' + (index + 1) }}
           </span>
@@ -57,7 +57,7 @@
         <div class="element-item"
              :class="{ active: selectedElement === 'star' }"
              @click.stop="selectElement('star', 'star', 0)">
-          <span class="element-icon">⭐</span>
+          <span class="element-icon">④</span>
           <span class="element-name">{{ t('elementList.elements.star') }}</span>
           <span class="element-type">{{ drawStar.drawStar ? t('elementList.status.enabled') : t('elementList.status.disabled') }}</span>
         </div>
@@ -66,7 +66,7 @@
              :key="`circle-all-${index}`"
              :class="{ active: selectedElement === `circle-${index}` }"
              @click.stop="selectElement(`circle-${index}`, 'circle', index)">
-          <span class="element-icon">⭕</span>
+          <span class="element-icon">④</span>
           <span class="element-name">{{ t('elementList.defaults.innerCircleIndex', { index: index + 1 }) }}</span>
         </div>
         <div class="element-item"

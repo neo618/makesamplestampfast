@@ -39,11 +39,11 @@
             {{ t('stamp.exportFormat.exportMultipleAging') }}
           </label>
           <div v-if="exportMultipleAging" class="aging-levels-info">
-            <span class="aging-level-tag">0% - {{ t('stamp.exportFormat.noAging') }}</span>
-            <span class="aging-level-tag">25% - {{ t('stamp.exportFormat.lightAging') }}</span>
-            <span class="aging-level-tag">50% - {{ t('stamp.exportFormat.mediumAging') }}</span>
-            <span class="aging-level-tag">75% - {{ t('stamp.exportFormat.heavyAging') }}</span>
-          </div>
+          <span class="aging-level-tag">10% - {{ t('stamp.exportFormat.noAging') }}</span>
+          <span class="aging-level-tag">20% - {{ t('stamp.exportFormat.lightAging') }}</span>
+          <span class="aging-level-tag">30% - {{ t('stamp.exportFormat.mediumAging') }}</span>
+          <span class="aging-level-tag">40% - {{ t('stamp.exportFormat.heavyAging') }}</span>
+        </div>
         </div>
         <div class="qr-code-section">
           <div class="qr-code-title">{{ t('stamp.exportFormat.qrCodeTitle') }}</div>
@@ -160,36 +160,47 @@
         </div>
       </div>
       <div class="canvas-main-content">
-        <div class="canvas-wrapper">
-          <canvas ref="stampCanvas" width="400" height="400"></canvas>
-        </div>
-        <div class="aging-preview-panel">
-          <div class="aging-preview-header">
-            <h3>做旧效果预览</h3>
+        <div class="canvas-and-previews">
+          <!-- Canvas 主画布 -->
+          <div class="canvas-wrapper">
+            <canvas ref="stampCanvas" width="366" height="366"></canvas>
           </div>
-          <div class="aging-preview-grid">
-            <div v-for="level in agingPreviewLevels" :key="level.intensity" class="aging-preview-item">
-              <div class="aging-preview-label">{{ level.intensity }}% - {{ level.label }}</div>
-              <div class="aging-preview-image">
-                <img v-if="agingPreviews[level.intensity]" :src="agingPreviews[level.intensity]" :alt="level.label" />
-                <div v-else class="aging-preview-placeholder">加载中...</div>
-              </div>
+          <!-- 右侧上方预览 -->
+          <div class="aging-preview-item aging-right-top">
+            <div class="aging-preview-label">10% - 轻度</div>
+            <div class="aging-preview-image">
+              <img v-if="agingPreviews[10]" :src="agingPreviews[10]" alt="轻度做旧" />
+              <div v-else class="aging-preview-placeholder">加载中...</div>
             </div>
           </div>
-          <div class="aging-preview-footer">
-            <button @click="exportAllAgingVersions" class="export-all-btn">下载全部4个版本</button>
+          <!-- 右侧下方预览 -->
+          <div class="aging-preview-item aging-right-bottom">
+            <div class="aging-preview-label">20% - 中度</div>
+            <div class="aging-preview-image">
+              <img v-if="agingPreviews[20]" :src="agingPreviews[20]" alt="中度做旧" />
+              <div v-else class="aging-preview-placeholder">加载中...</div>
+            </div>
+          </div>
+          <!-- 下侧左侧预览 -->
+          <div class="aging-preview-item aging-bottom-left">
+            <div class="aging-preview-label">30% - 重度</div>
+            <div class="aging-preview-image">
+              <img v-if="agingPreviews[30]" :src="agingPreviews[30]" alt="重度做旧" />
+              <div v-else class="aging-preview-placeholder">加载中...</div>
+            </div>
+          </div>
+          <!-- 下侧右侧预览 -->
+          <div class="aging-preview-item aging-bottom-right">
+            <div class="aging-preview-label">40% - 极重度</div>
+            <div class="aging-preview-image">
+              <img v-if="agingPreviews[40]" :src="agingPreviews[40]" alt="极重度做旧" />
+              <div v-else class="aging-preview-placeholder">加载中...</div>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="canvas-footer">
-        <button
-          class="canvas-download-btn"
-          @click="saveStampAsPNG"
-          :title="t('homepage.canvas.download')"
-        >
-          <span>💾</span>
-          <span>{{ t('homepage.canvas.download') }}</span>
-        </button>
+        <div class="aging-preview-footer">
+          <button @click="exportAllAgingVersions" class="export-all-btn">下载全部4个版本</button>
+        </div>
       </div>
     </div>
     </div>
@@ -319,10 +330,10 @@ const exportMultipleAging = ref(false)
 // 做旧预览
 const agingPreviews = ref<Record<number, string>>({})
 const agingPreviewLevels = [
-  { intensity: 0, label: '无做旧' },
-  { intensity: 25, label: '轻度做旧' },
-  { intensity: 50, label: '中度做旧' },
-  { intensity: 75, label: '重度做旧' }
+  { intensity: 10, label: '轻度做旧' },
+  { intensity: 20, label: '中度做旧' },
+  { intensity: 30, label: '重度做旧' },
+  { intensity: 40, label: '极重度做旧' }
 ]
 let agingPreviewTimer: number | null = null
 
@@ -521,7 +532,7 @@ const generateAgingPreviews = async () => {
   // 延迟执行，避免频繁刷新
   agingPreviewTimer = window.setTimeout(async () => {
     try {
-      const intensities = [0, 25, 50, 75]
+      const intensities = [10, 20, 30, 40]
       const previews: Record<number, string> = {}
 
       for (const intensity of intensities) {
@@ -559,14 +570,8 @@ const generateAgingPreviews = async () => {
         const previewCtx = previewCanvas.getContext('2d')
 
         if (previewCtx) {
-          // 绘制当前画布内容到小预览图
+          // 直接绘制当前画布内容到预览图（做旧已在 refreshStamp 中应用）
           previewCtx.drawImage(drawStampUtils.canvas, 0, 0, previewSize, previewSize)
-
-          // 应用做旧效果
-          if (intensity > 0) {
-            drawStampUtils.addAgingEffect(previewCtx, previewSize, previewSize, true)
-          }
-
           previews[intensity] = previewCanvas.toDataURL('image/png')
         }
 
@@ -590,7 +595,7 @@ const exportAllAgingVersions = async () => {
   if (!drawStampUtils) return
 
   const quality = 0.92
-  const agingLevels = [0, 25, 50, 75]
+  const agingLevels = [10, 20, 30, 40]
   const versions = await drawStampUtils.exportMultipleAgingVersions(
     'png',
     quality,
@@ -1046,57 +1051,74 @@ onUnmounted(() => {
 .canvas-main-content {
   flex: 1;
   display: flex;
-  flex-direction: row;
-  gap: 16px;
+  flex-direction: column;
+  gap: 12px;
   padding: 16px;
   overflow: hidden;
 }
 
-/* 做旧预览面板 */
-.aging-preview-panel {
-  width: 240px;
-  flex-shrink: 0;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-}
-
-.aging-preview-header {
-  padding: 12px 16px;
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
-  border-bottom: 1px solid var(--border-color);
-}
-
-.aging-preview-header h3 {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: #fff;
-  letter-spacing: 0.5px;
-}
-
-.aging-preview-grid {
+.canvas-and-previews {
   flex: 1;
-  padding: 12px;
+  display: grid;
+  grid-template-columns: 366px 150px 150px;
+  grid-template-rows: 183px 183px 150px;
+  gap: 8px;
+}
+
+.canvas-wrapper {
+  grid-column: 1;
+  grid-row: 1 / 3;
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-  overflow-y: auto;
+  align-items: flex-start;
+  justify-content: flex-start;
+  background:
+    linear-gradient(45deg, var(--bg-tertiary) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--bg-tertiary) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--bg-tertiary) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--bg-tertiary) 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.canvas-wrapper canvas {
+  display: block;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .aging-preview-item {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
-  padding: 8px;
+  padding: 6px;
   transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.aging-right-top {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.aging-right-bottom {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.aging-bottom-left {
+  grid-column: 1;
+  grid-row: 3;
+}
+
+.aging-bottom-right {
+  grid-column: 2;
+  grid-row: 3;
 }
 
 .aging-preview-item:hover {
@@ -1106,15 +1128,16 @@ onUnmounted(() => {
 }
 
 .aging-preview-label {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   color: var(--text-secondary);
   text-align: center;
+  white-space: nowrap;
 }
 
 .aging-preview-image {
   width: 100%;
-  aspect-ratio: 1;
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1130,15 +1153,16 @@ onUnmounted(() => {
 }
 
 .aging-preview-placeholder {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-tertiary);
   text-align: center;
 }
 
 .aging-preview-footer {
   padding: 12px;
-  border-top: 1px solid var(--border-color);
-  background: var(--bg-tertiary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
 }
 
 .export-all-btn {
