@@ -1,0 +1,11 @@
+{
+  "name": "drawstamp-deploy",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "serve dist -l 8080"
+  },
+  "devDependencies": {
+    "serve": "^14.2.0"
+  }
+}
