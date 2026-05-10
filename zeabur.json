@@ -1,0 +1,14 @@
+{
+  "$schema": "https://zeabur.com/schema/zeabur.json",
+  "build": {
+    "command": "npm install && npm run build"
+  },
+  "deploy": {
+    "command": "npx serve dist -l $PORT"
+  },
+  "env": {
+    "PORT": {
+      "default": "8080"
+    }
+  }
+}
