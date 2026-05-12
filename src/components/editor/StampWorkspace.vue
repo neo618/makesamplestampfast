@@ -213,7 +213,7 @@
             <div class="dialog-title">下载码验证</div>
             <div class="dialog-content">
               <p>请联系管理员获取下载码（有效期一天），进行下载</p>
-              <p class="dialog-link">链接：<a href="https://www.baidu.com" target="_blank">www.baidu.com</a></p>
+              <p class="dialog-link">链接：<a href="https://m.tb.cn/h.RZRs4Wc?tk=s2GD5qXCAPO" target="_blank">m.tb.cn/h.RZRs4Wc</a></p>
               <div class="dialog-input-wrapper">
                 <input
                   v-model="downloadCode"
