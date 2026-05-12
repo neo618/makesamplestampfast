@@ -377,7 +377,7 @@ const downloadCodeError = ref('')
 const downloadCodeInput = ref<HTMLInputElement | null>(null)
 
 // 正确的下载码（可替换为后端验证）
-const CORRECT_DOWNLOAD_CODE = '123456'
+const CORRECT_DOWNLOAD_CODE = '0315'
 
 // 模拟付款
 const confirmPayment = () => {
