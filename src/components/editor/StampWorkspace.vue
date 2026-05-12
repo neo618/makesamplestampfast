@@ -212,7 +212,7 @@
           <div class="download-code-dialog">
             <div class="dialog-title">下载码验证</div>
             <div class="dialog-content">
-              <p>请联系管理员获取下载码，进行下载</p>
+              <p>请联系管理员获取下载码（有效期一天），进行下载</p>
               <p class="dialog-link">链接：<a href="https://www.baidu.com" target="_blank">www.baidu.com</a></p>
               <div class="dialog-input-wrapper">
                 <input
@@ -1327,7 +1327,7 @@ onUnmounted(() => {
 
 .dialog-content p {
   margin: 0 0 12px;
-  font-size: 14px;
+  font-size: 16px;
   color: var(--text-primary);
   line-height: 1.6;
   text-align: center;
@@ -1335,7 +1335,7 @@ onUnmounted(() => {
 
 .dialog-link {
   color: var(--text-secondary) !important;
-  font-size: 13px !important;
+  font-size: 15px !important;
 }
 
 .dialog-link a {
