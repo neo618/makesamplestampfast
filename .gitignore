@@ -9,6 +9,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # Build output
+dist/
 build/
 
 # Dependency directories
@@ -36,4 +37,17 @@ jspm_packages/
 
 .vscode
 .idea
+
+# Other temp files
+*.zip
+*.ipynb
+*.json.bak
+__dummy__*
+rectangle_json*
+a.json
+deploy-package.json
+package-deploy.json
+server.js
+使用说明*.txt
+直接运行*.bat
 

@@ -1,4 +1,28 @@
 <template>
+  <!-- 下载码验证弹窗 -->
+  <div v-if="showDownloadCodeDialog" class="legal-dialog-overlay" @click.self="closeDownloadCodeDialog">
+    <div class="legal-dialog">
+      <h3>下载码验证</h3>
+      <div class="legal-content">
+        <p class="download-code-prompt">请输入下载码以继续下载</p>
+        <div class="download-code-input-wrapper">
+          <input
+            v-model="downloadCode"
+            type="password"
+            class="download-code-input"
+            placeholder="请输入下载码"
+            @keyup.enter="verifyDownloadCode"
+          />
+        </div>
+        <p v-if="downloadCodeError" class="download-code-error">{{ downloadCodeError }}</p>
+      </div>
+      <div class="dialog-buttons">
+        <button @click="closeDownloadCodeDialog" class="cancel-button">取消</button>
+        <button @click="verifyDownloadCode" class="confirm-button">验证</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 导出格式弹窗 -->
   <div v-if="showFormatDialog" class="legal-dialog-overlay" @click.self="closeFormatDialog">
     <div class="legal-dialog">
@@ -101,7 +125,7 @@
     <!-- 顶部标题栏 -->
     <div class="app-title-bar">
       <h1 class="app-title">简易快速制图助手</h1>
-      <p class="operation-steps">操作步骤：1. 选择模板 → 2. 点击左侧【参数选择】 → 3. 在【参数设置】下输入名称、调整参数 → 4. 导出图片</p>
+      <p class="operation-steps">操作步骤：1. 选择模板 → 2. 点击左侧【参数选择】 → 3. 在【参数设置】下输入名称、调整参数 → 4. 点击【下载】→ 5. 联系供应商获取下载码</p>
     </div>
 
     <div class="stamp-draw-container">
@@ -327,6 +351,12 @@ const defaultExportHeight = ref(0)
 const hasPaid = ref(false)
 const exportMultipleAging = ref(false)
 
+// 下载码验证
+const showDownloadCodeDialog = ref(false)
+const downloadCode = ref('')
+const downloadCodeError = ref('')
+const CORRECT_DOWNLOAD_CODE = '0315'
+
 // 做旧预览
 const agingPreviews = ref<Record<number, string>>({})
 const agingPreviewLevels = [
@@ -460,13 +490,35 @@ const drawStamp = (refreshSecurityPattern: boolean = false, refreshOld: boolean 
 // 保存图片（本地下载，无后端限制）
 const saveStampAsPNG = () => {
   if (!drawStampUtils) return
-  const baseSize = drawStampUtils.getExportBaseSize()
-  defaultExportWidth.value = Math.round(baseSize.width)
-  defaultExportHeight.value = Math.round(baseSize.height)
-  selectedFormat.value = 'png'
-  jpegQuality.value = 92
+  // 先弹出下载码验证对话框
+  openDownloadCodeDialog()
+}
 
-  showFormatDialog.value = true
+const openDownloadCodeDialog = () => {
+  showDownloadCodeDialog.value = true
+  downloadCode.value = ''
+  downloadCodeError.value = ''
+}
+
+const closeDownloadCodeDialog = () => {
+  showDownloadCodeDialog.value = false
+  downloadCode.value = ''
+  downloadCodeError.value = ''
+}
+
+const verifyDownloadCode = () => {
+  if (downloadCode.value === CORRECT_DOWNLOAD_CODE) {
+    closeDownloadCodeDialog()
+    // 验证成功后打开导出格式对话框
+    const baseSize = drawStampUtils.getExportBaseSize()
+    defaultExportWidth.value = Math.round(baseSize.width)
+    defaultExportHeight.value = Math.round(baseSize.height)
+    selectedFormat.value = 'png'
+    jpegQuality.value = 92
+    showFormatDialog.value = true
+  } else {
+    downloadCodeError.value = '下载码不正确，请重新输入'
+  }
 }
 
 const closeFormatDialog = () => {
@@ -1483,6 +1535,61 @@ onUnmounted(() => {
   background: var(--primary-light);
   border-color: var(--primary-color);
   color: var(--primary-color);
+}
+
+/* 下载码验证样式 */
+.download-code-prompt {
+  font-size: 14px;
+  color: var(--text-primary);
+  text-align: center;
+  margin: 0 0 16px 0;
+}
+
+.download-code-input-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.download-code-input {
+  width: 100%;
+  max-width: 280px;
+  padding: 10px 14px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius);
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: 4px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+.download-code-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-light);
+  outline: none;
+}
+
+.download-code-input::placeholder {
+  letter-spacing: normal;
+  font-weight: normal;
+  color: var(--text-tertiary);
+}
+
+.download-code-error {
+  font-size: 13px;
+  color: #ef4444;
+  text-align: center;
+  margin: 8px 0 0 0;
+  animation: shake 0.3s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
 }
 </style>
 
