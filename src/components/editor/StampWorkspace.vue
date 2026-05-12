@@ -1,28 +1,4 @@
 <template>
-  <!-- 下载码验证弹窗 -->
-  <div v-if="showDownloadCodeDialog" class="legal-dialog-overlay" @click.self="closeDownloadCodeDialog">
-    <div class="legal-dialog">
-      <h3>下载码验证</h3>
-      <div class="legal-content">
-        <p class="download-code-prompt">请输入下载码以继续下载</p>
-        <div class="download-code-input-wrapper">
-          <input
-            v-model="downloadCode"
-            type="password"
-            class="download-code-input"
-            placeholder="请输入下载码"
-            @keyup.enter="verifyDownloadCode"
-          />
-        </div>
-        <p v-if="downloadCodeError" class="download-code-error">{{ downloadCodeError }}</p>
-      </div>
-      <div class="dialog-buttons">
-        <button @click="closeDownloadCodeDialog" class="cancel-button">取消</button>
-        <button @click="verifyDownloadCode" class="confirm-button">验证</button>
-      </div>
-    </div>
-  </div>
-
   <!-- 导出格式弹窗 -->
   <div v-if="showFormatDialog" class="legal-dialog-overlay" @click.self="closeFormatDialog">
     <div class="legal-dialog">
@@ -125,7 +101,7 @@
     <!-- 顶部标题栏 -->
     <div class="app-title-bar">
       <h1 class="app-title">简易快速制图助手</h1>
-      <p class="operation-steps">操作步骤：1. 选择模板 → 2. 点击左侧【参数选择】 → 3. 在【参数设置】下输入名称、调整参数 → 4. 点击【下载】→ 5. 联系供应商获取下载码</p>
+      <p class="operation-steps">操作步骤：1. 选择模板 → 2. 点击左侧【参数选择】 → 3. 在【参数设置】下输入名称、调整参数 → 4. 导出图片</p>
     </div>
 
     <div class="stamp-draw-container">
@@ -223,11 +199,44 @@
           </div>
         </div>
         <div class="aging-preview-footer">
-          <button @click="exportAllAgingVersions" class="export-all-btn">下载全部4个版本</button>
+          <button @click="showDownloadCodeDialog = true" class="export-all-btn">下载全部4个版本</button>
         </div>
       </div>
     </div>
     </div>
+    
+    <!-- 下载码验证对话框 -->
+    <Teleport to="body">
+      <Transition name="dialog-fade">
+        <div v-if="showDownloadCodeDialog" class="download-code-dialog-overlay" @click.self="closeDownloadCodeDialog">
+          <div class="download-code-dialog">
+            <div class="dialog-title">下载码验证</div>
+            <div class="dialog-content">
+              <p>请联系管理员获取下载码，进行下载</p>
+              <p class="dialog-link">链接：<a href="https://www.baidu.com" target="_blank">www.baidu.com</a></p>
+              <div class="dialog-input-wrapper">
+                <input
+                  v-model="downloadCode"
+                  type="text"
+                  class="dialog-input"
+                  placeholder="请输入下载码"
+                  @keyup.enter="verifyDownloadCode"
+                  ref="downloadCodeInput"
+                />
+              </div>
+              <div v-if="downloadCodeError" class="dialog-error">
+                <span class="error-icon">⚠️</span>
+                <span>{{ downloadCodeError }}</span>
+              </div>
+            </div>
+            <div class="dialog-footer">
+              <button class="dialog-btn dialog-btn-cancel" @click="closeDownloadCodeDialog">取消</button>
+              <button class="dialog-btn dialog-btn-confirm" @click="verifyDownloadCode">验证</button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
     
   </div>
 </template>
@@ -351,12 +360,6 @@ const defaultExportHeight = ref(0)
 const hasPaid = ref(false)
 const exportMultipleAging = ref(false)
 
-// 下载码验证
-const showDownloadCodeDialog = ref(false)
-const downloadCode = ref('')
-const downloadCodeError = ref('')
-const CORRECT_DOWNLOAD_CODE = '0315'
-
 // 做旧预览
 const agingPreviews = ref<Record<number, string>>({})
 const agingPreviewLevels = [
@@ -366,6 +369,15 @@ const agingPreviewLevels = [
   { intensity: 40, label: '极重度做旧' }
 ]
 let agingPreviewTimer: number | null = null
+
+// 下载码验证
+const showDownloadCodeDialog = ref(false)
+const downloadCode = ref('')
+const downloadCodeError = ref('')
+const downloadCodeInput = ref<HTMLInputElement | null>(null)
+
+// 正确的下载码（可替换为后端验证）
+const CORRECT_DOWNLOAD_CODE = '123456'
 
 // 模拟付款
 const confirmPayment = () => {
@@ -490,35 +502,13 @@ const drawStamp = (refreshSecurityPattern: boolean = false, refreshOld: boolean 
 // 保存图片（本地下载，无后端限制）
 const saveStampAsPNG = () => {
   if (!drawStampUtils) return
-  // 先弹出下载码验证对话框
-  openDownloadCodeDialog()
-}
+  const baseSize = drawStampUtils.getExportBaseSize()
+  defaultExportWidth.value = Math.round(baseSize.width)
+  defaultExportHeight.value = Math.round(baseSize.height)
+  selectedFormat.value = 'png'
+  jpegQuality.value = 92
 
-const openDownloadCodeDialog = () => {
-  showDownloadCodeDialog.value = true
-  downloadCode.value = ''
-  downloadCodeError.value = ''
-}
-
-const closeDownloadCodeDialog = () => {
-  showDownloadCodeDialog.value = false
-  downloadCode.value = ''
-  downloadCodeError.value = ''
-}
-
-const verifyDownloadCode = () => {
-  if (downloadCode.value === CORRECT_DOWNLOAD_CODE) {
-    closeDownloadCodeDialog()
-    // 验证成功后打开导出格式对话框
-    const baseSize = drawStampUtils.getExportBaseSize()
-    defaultExportWidth.value = Math.round(baseSize.width)
-    defaultExportHeight.value = Math.round(baseSize.height)
-    selectedFormat.value = 'png'
-    jpegQuality.value = 92
-    showFormatDialog.value = true
-  } else {
-    downloadCodeError.value = '下载码不正确，请重新输入'
-  }
+  showFormatDialog.value = true
 }
 
 const closeFormatDialog = () => {
@@ -662,6 +652,43 @@ const exportAllAgingVersions = async () => {
     await new Promise(resolve => setTimeout(resolve, 200))
   }
 }
+
+// 关闭下载码对话框
+const closeDownloadCodeDialog = () => {
+  showDownloadCodeDialog.value = false
+  downloadCode.value = ''
+  downloadCodeError.value = ''
+}
+
+// 验证下载码
+const verifyDownloadCode = async () => {
+  if (!downloadCode.value.trim()) {
+    downloadCodeError.value = '请输入下载码'
+    return
+  }
+
+  if (downloadCode.value.trim() === CORRECT_DOWNLOAD_CODE) {
+    // 验证通过，关闭对话框并执行下载
+    closeDownloadCodeDialog()
+    await exportAllAgingVersions()
+  } else {
+    downloadCodeError.value = '验证码错误，请重新输入'
+    downloadCode.value = ''
+    // 聚焦输入框
+    nextTick(() => {
+      downloadCodeInput.value?.focus()
+    })
+  }
+}
+
+// 监听对话框打开，自动聚焦输入框
+watch(showDownloadCodeDialog, (newValue) => {
+  if (newValue) {
+    nextTick(() => {
+      downloadCodeInput.value?.focus()
+    })
+  }
+})
 
 const resetStamp = () => {
   if (!drawStampUtils) return
@@ -1241,6 +1268,175 @@ onUnmounted(() => {
   transform: translateY(0);
 }
 
+/* 下载码验证对话框 */
+.download-code-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.download-code-dialog {
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 420px;
+  width: 90%;
+  overflow: hidden;
+  animation: dialog-scale-in 0.2s ease-out;
+}
+
+@keyframes dialog-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.dialog-fade-enter-active,
+.dialog-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.dialog-fade-enter-from,
+.dialog-fade-leave-to {
+  opacity: 0;
+}
+
+.dialog-title {
+  padding: 20px 24px 16px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #d40000;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.dialog-content {
+  padding: 20px 24px;
+}
+
+.dialog-content p {
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: var(--text-primary);
+  line-height: 1.6;
+  text-align: center;
+}
+
+.dialog-link {
+  color: var(--text-secondary) !important;
+  font-size: 13px !important;
+}
+
+.dialog-link a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.dialog-link a:hover {
+  text-decoration: underline;
+}
+
+.dialog-input-wrapper {
+  margin-top: 16px;
+}
+
+.dialog-input {
+  width: 100%;
+  height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background: var(--bg-tertiary);
+  font-size: 14px;
+  color: var(--text-primary);
+  outline: none;
+  transition: all 0.2s ease;
+  text-align: center;
+  letter-spacing: 2px;
+}
+
+.dialog-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
+}
+
+.dialog-input::placeholder {
+  color: var(--text-tertiary);
+  letter-spacing: 0;
+}
+
+.dialog-error {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #ffe6e6;
+  border: 1px solid #ffb3b3;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #cc0000;
+}
+
+.error-icon {
+  font-size: 16px;
+}
+
+.dialog-footer {
+  padding: 16px 24px 20px;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.dialog-btn {
+  height: 40px;
+  padding: 0 24px;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dialog-btn-cancel {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.dialog-btn-cancel:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.dialog-btn-confirm {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+}
+
+.dialog-btn-confirm:hover {
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+.dialog-btn-confirm:active {
+  transform: translateY(0);
+}
+
 
 .canvas-footer {
   display: flex;
@@ -1535,61 +1731,6 @@ onUnmounted(() => {
   background: var(--primary-light);
   border-color: var(--primary-color);
   color: var(--primary-color);
-}
-
-/* 下载码验证样式 */
-.download-code-prompt {
-  font-size: 14px;
-  color: var(--text-primary);
-  text-align: center;
-  margin: 0 0 16px 0;
-}
-
-.download-code-input-wrapper {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 12px;
-}
-
-.download-code-input {
-  width: 100%;
-  max-width: 280px;
-  padding: 10px 14px;
-  border: 2px solid var(--border-color);
-  border-radius: var(--radius);
-  font-size: 16px;
-  font-weight: 600;
-  text-align: center;
-  letter-spacing: 4px;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  transition: all 0.2s ease;
-}
-
-.download-code-input:focus {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px var(--primary-light);
-  outline: none;
-}
-
-.download-code-input::placeholder {
-  letter-spacing: normal;
-  font-weight: normal;
-  color: var(--text-tertiary);
-}
-
-.download-code-error {
-  font-size: 13px;
-  color: #ef4444;
-  text-align: center;
-  margin: 8px 0 0 0;
-  animation: shake 0.3s ease;
-}
-
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
 }
 </style>
 
